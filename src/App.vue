@@ -19,10 +19,19 @@ export default {
 </script>
 <style lang="scss">
   html,body{
-    height: 100%;
-    width: 100%;
+      width: 100%;
+      height: 100%;
+      background: #cccccc;
+  }
+  *{
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
   }
   .ivu-layout{
     height: 100%;
+  }
+  li,ol,ul{
+    list-style: none;
   }
 </style>

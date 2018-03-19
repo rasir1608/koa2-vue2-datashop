@@ -1,8 +1,8 @@
 const db = require('../db/db.js');
 
 const userModel = '../models/user.js';
-const todolistDb = db.todoList;
-const User = todolistDb.import(userModel);
+const datashopBase = db.datashop;
+const User = datashopBase.import(userModel);
 
 export default {
     async getUserById(id) {
@@ -14,6 +14,7 @@ export default {
         return userInfo;
     },
     async getUserByAccount(account) {
+        console.log(17, account);
         const userInfo = await User.findOne({
             where: {
                 account,
@@ -23,7 +24,8 @@ export default {
     },
     async addUser(data) {
         await User.create({
-            user_name: data.userName,
+            account: data.account,
+            user_name: data.account,
             password: data.password,
         });
         return true;

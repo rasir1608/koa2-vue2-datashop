@@ -13,11 +13,11 @@ const favicon = require('koa-favicon');
 const app = new Koa();
 
 app
-.use(favicon(path.resolve(__dirname, './public/favicon.jpg')))
-.use(Static(path.resolve(__dirname, './public')))
-.use(Logger())
-.use(Json())
-.use(Body())
+    .use(favicon(path.resolve(__dirname, './public/favicon.jpg')))
+    .use(Static(path.resolve(__dirname, './public')))
+    .use(Logger())
+    .use(Json())
+    .use(Body())
 ;
 app.on('error', (err) => {
     console.log('server error', err);

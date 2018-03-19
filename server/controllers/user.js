@@ -2,7 +2,7 @@ const userServer = require('../services/user.js');
 const jwt = require('koa-jwt');
 const bcrypt = require('bcryptjs');
 
-export default {
+module.exports = {
     async getUserInfoById(ctx) {
         const id = ctx.params.id;
         const result = await userServer.getUserById(id);
@@ -12,6 +12,7 @@ export default {
         };
     },
     async registerAuth(ctx) {
+        console.log(15, ctx);
         const userInfo = ctx.request.body;
         const isExis = await userServer.getUserByAccount(userInfo.account);
         if (isExis) {
@@ -23,7 +24,7 @@ export default {
         } else {
             const salt = bcrypt.genSaltSync(10);
             const hash = bcrypt.hashSync(userInfo.password, salt);
-            await userServer.insert({
+            await userServer.addUser({
                 account: userInfo.account,
                 password: hash,
             });
