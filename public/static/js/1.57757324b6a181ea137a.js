@@ -1,2 +1,0 @@
-webpackJsonp([1],{QZsX:function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var l={render:function(){var e=this.$createElement,t=this._self._c||e;return t("div",{staticClass:"login"},[t("h3",[this._v("欢迎登陆")]),t("router-view")],1)},staticRenderFns:[]},s=n("VU/8")(null,l,!1,null,null,null);t.default=s.exports}});
-//# sourceMappingURL=1.57757324b6a181ea137a.js.map

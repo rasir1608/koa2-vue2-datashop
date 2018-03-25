@@ -34,4 +34,8 @@ export default {
   li,ol,ul{
     list-style: none;
   }
+  .ivu-layout-content{
+    flex: 1;
+    overflow: auto;
+  }
 </style>

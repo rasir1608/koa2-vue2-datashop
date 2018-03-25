@@ -21,24 +21,18 @@
 export default {
   data(){
     return{
-      menuManager:'',
     }
   },
   watch:{
-    routerPath(val){
-      this.menuManager = val;
-    },
   },
   computed:{
-    routerPath(){
-      return this.$store.state.auth.routerPath;
+    menuManager(){
+      const path = this.$route.path.match(/\/[a-zA-Z0-9-_]+/);
+      return path ? path[0] : '';
     },
   },
   methods:{
     menuChange(val){
-      // this.$store.commit('ROUTER_PATH',val);
-      console.log(val)
-      this.menuManager = val;
       this.$router.push(val);
     },
   }
