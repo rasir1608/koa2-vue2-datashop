@@ -4,7 +4,7 @@ const userModel = '../models/user.js';
 const datashopBase = db.datashop;
 const User = datashopBase.import(userModel);
 
-export default {
+module.exports = {
     async getUserById(id) {
         const userInfo = await User.findOne({
             where: {
@@ -27,6 +27,8 @@ export default {
             account: data.account,
             user_name: data.account,
             password: data.password,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         });
         return true;
     },
