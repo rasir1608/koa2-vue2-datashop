@@ -1,5 +1,5 @@
 const userServer = require('../services/user.js');
-const jwt = require('koa-jwt');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 module.exports = {
@@ -12,7 +12,6 @@ module.exports = {
         };
     },
     async registerAuth(ctx) {
-        console.log(15, ctx);
         const userInfo = ctx.request.body;
         const isExis = await userServer.getUserByAccount(userInfo.account);
         if (isExis) {
@@ -24,6 +23,7 @@ module.exports = {
         } else {
             const salt = bcrypt.genSaltSync(10);
             const hash = bcrypt.hashSync(userInfo.password, salt);
+            console.log(26, hash);
             await userServer.addUser({
                 account: userInfo.account,
                 password: hash,
@@ -31,7 +31,7 @@ module.exports = {
             ctx.body = {
                 ok: true,
                 data: 1,
-                msg: '账号保持成功',
+                msg: '账号保存成功',
             };
         }
     },
@@ -50,6 +50,7 @@ module.exports = {
                     name: userInfo.suer_name,
                     id: userInfo.id,
                 };
+                console.log(53, jwt.sign);
                 const token = jwt.sign(userToken, 'data-shop-secret');
                 ctx.body = {
                     ok: true,

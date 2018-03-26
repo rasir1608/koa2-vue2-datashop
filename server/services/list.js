@@ -4,7 +4,7 @@ const listModel = '../models/list.js';
 const datashop = db.datashop;
 const List = datashop.import(listModel);
 
-export default {
+module.exports = {
     async getListById(id) {
         const list = await List.findAll({
             where: {
