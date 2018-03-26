@@ -1,11 +1,15 @@
 /* eslint-disable no-shadow */
 const state = {
-  userId: '2222',
+  token: '' || localStorage.getItem('datashop_token'),
   routerPath: '',
 };
 const mutations = {
   ROUTER_PATH(state, path) {
     state.routerPath = path;
+  },
+  SET_TOKEN(state, token) {
+    state.token = token;
+    localStorage.setItem('datashop_token', state.token);
   },
 };
 const actions = {};

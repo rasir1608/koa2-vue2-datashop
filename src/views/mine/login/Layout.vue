@@ -9,7 +9,7 @@
         span 密码：
         Input(v-model='userInfo.password',type='password')
       li
-        Button(type='primary') 登陆
+        Button(type='primary',@click="submit") 登陆
         Button(type='dashed',@click='$router.push("/register")') 去注册
 </template>
 <script>
@@ -21,6 +21,22 @@ export default {
         password:'',
       }
     }
+  },
+  methods:{
+    async submit(){
+      if(this.userInfo.account && this.userInfo.password){
+        const ret = await this.$axios.post('/user/login',this.userInfo);
+        if(ret.ok){
+          this.$store.commit('SET_TOKEN',ret.token);
+          this.$router.push('/');
+          this.$Message.success(`恭喜登录成功！`);
+        } else {
+          this.$Message.error(`${ret.msg},请重新登录`);
+        }
+      } else {
+        this.$Message.error('请填写账号密码！');
+      }
+    },
   },
 }
 </script>

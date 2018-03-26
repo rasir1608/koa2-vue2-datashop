@@ -27,7 +27,7 @@ export default {
     }
   },
   methods:{
-    submit(){
+    async submit(){
       if(!this.userInfo.account) {
         this.$Message.error('请输入账号');
         return;
@@ -40,10 +40,16 @@ export default {
         this.$Message.error('两次密码输入不一致，请重新输入');
         this.userInfo.repassword = '';
       } else {
-        this.$axios.post('/user/register',{
+        const ret = await this.$axios.post('/user/register',{
           account:this.userInfo.account,
           password:this.userInfo.password
-        });
+        })
+        if(ret.ok){
+          this.$Message.success('恭喜您注册成功！');
+          this.$router.push('/login');
+        } else {
+          this.$Message.error(ret.msg+'请重新注册');
+        }
       }
     },
   }

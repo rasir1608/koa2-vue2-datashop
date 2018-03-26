@@ -10,11 +10,11 @@
           | 项目管理
     Sider(hide-trigger)
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        MenuItem(name='/login')
+        MenuItem(name='/mine/login')
           | 登陆
-        MenuItem(name='/register')
+        MenuItem(name='/mine/register')
           | 注册
-        MenuItem(name='/logout')
+        MenuItem(name='/mine/logout')
           | 注销
 </template>
 <script>
@@ -27,8 +27,9 @@ export default {
   },
   computed:{
     menuManager(){
-      const path = this.$route.path.match(/\/[a-zA-Z0-9-_]+/);
-      return path ? path[0] : '';
+      let path = this.$route.path;
+      if(/^\/my-interface/.test(path)) path = '/my-interface';
+      return path || '';
     },
   },
   methods:{

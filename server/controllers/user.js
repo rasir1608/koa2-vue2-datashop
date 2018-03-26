@@ -41,17 +41,20 @@ module.exports = {
         if (userInfo !== null) {
             if (!bcrypt.compareSync(data.password, userInfo.password)) {
                 ctx.body = {
-                    ok: true,
+                    ok: false,
                     data: null,
-                    info: '密码错误！',
+                    msg: '密码错误！',
                 };
             } else {
                 const userToken = {
                     name: userInfo.suer_name,
                     id: userInfo.id,
                 };
-                console.log(53, jwt.sign);
-                const token = jwt.sign(userToken, 'data-shop-secret');
+                const token = jwt.sign({
+                    data: userToken,
+                     // 设置 token 过期时间
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60),
+                }, 'data-shop-secret');
                 ctx.body = {
                     ok: true,
                     token,
