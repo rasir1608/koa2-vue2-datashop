@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `interface` (
   `name` varchar(255) NOT NULL comment "接口名称",
   `url` varchar(255) NOT NULL comment "接口url",
   `method` varchar(10) NOT NULL DEFAULT "GET" comment "请求方法",
-  `ContentType` varchar(255) DEFAULT "application/x-www-form-urlencoded; charset=UTF-8" comment "接口头部设置",
+  `contentType` varchar(255) DEFAULT "application/x-www-form-urlencoded; charset=UTF-8" comment "接口头部设置",
   `creator` int(11) NOT NULL comment "接口创建者",
   `oprator` int(11) NOT NULL comment "接口修改者",
   `request` text comment "接口请求信息",

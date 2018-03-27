@@ -81,13 +81,13 @@ module.exports = {
     },
     async getUserInfo(ctx) {
       const token = ctx.header.authorization;
-      console.log(79, token);
-      let payload;
       if (token) {
-        payload = await verify(token.split(' ')[1], 'data-shop-secret');
+        const payload = await verify(token.split(' ')[1], 'data-shop-secret');
+        const userId = payload.data.id;
+        const userInfo = await userServer.getUserById(userId);
         ctx.body = {
           ok: true,
-          data: payload,
+          data: userInfo,
           msg: '',
         };
       } else {

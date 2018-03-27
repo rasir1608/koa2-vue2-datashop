@@ -27,6 +27,16 @@ const systemServer = {
       });
       return ret;
     },
+    async getAllByIds(idArr) {
+      const ret = await system.findAll({
+        where: {
+          id: {
+            $in: idArr,
+          },
+        },
+      });
+      return ret;
+    },
     async getAllSystem() {
       const ret = await datashop.query('select * from system', { type: datashop.QueryTypes.SELECT });
       return ret;

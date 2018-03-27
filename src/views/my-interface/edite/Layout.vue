@@ -31,6 +31,8 @@
 </template>
 <script>
 import utils from '@/utils'
+import { mapGetters } from 'vuex';
+
 export default {
   data(){
       return {
@@ -55,10 +57,7 @@ export default {
               ]
 
           },
-          systemOptions:[{
-              id:1,
-              name:'hello'
-          }],
+          systemOptions:[],
           contentTypeOptions:['application/x-www-form-urlencoded','multipart/form-data','application/json','text/xml'],
           interface:{
             name:'',
@@ -74,6 +73,19 @@ export default {
           },
           requestEditor:'',
           responseEditor:'',
+      }
+  },
+  computed:{
+      ...mapGetters([
+          'userInfo'
+      ])
+  },
+  async created(){
+      const ret = await this.$axios.get('/system/mySystems',{params:{ids:this.userInfo.systems}})
+      if(ret.ok){
+          this.systemOptions = ret.data.map(e => ({id:e.id,name:e.name}))
+      } else {
+        this.$Message.error('可用项目获取失败！');
       }
   },
   mounted(){

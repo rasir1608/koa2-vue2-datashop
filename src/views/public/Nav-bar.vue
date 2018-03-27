@@ -42,7 +42,7 @@ export default {
     if(!this.userInfo.name){
       const ret = await this.$axios.get('/user/userInfo')
       if(ret.ok){
-        this.$store.commit('USER_INFO',ret.data.data);
+        this.$store.commit('USER_INFO',ret.data);
       } else {
         this.$store.commit('LOGOUT');
         this.$Message.error('请重新登录');

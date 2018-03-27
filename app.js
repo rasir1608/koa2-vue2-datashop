@@ -10,6 +10,7 @@ const favicon = require('koa-favicon');
 const JwtKoa = require('koa-jwt');
 const userRouter = require('./server/routers/user');
 const systemRouter = require('./server/routers/system');
+const interfaceRouter = require('./server/routers/interface');
 const ErrorRouter = require('./server/routers/error-router');
 // const history = require('koa2-connect-history-api-fallback');
 
@@ -32,6 +33,7 @@ app.on('error', (err) => {
 app
     .use(userRouter.routes(), userRouter.allowedMethods())
     .use(systemRouter.routes(), systemRouter.allowedMethods())
+    .use(interfaceRouter.routes(), interfaceRouter.allowedMethods())
     ;
 
 

@@ -12,7 +12,35 @@ module.exports = {
             },
             attributes: ['id', 'account', 'user_name', 'systems', 'kind', 'createdAt', 'updatedAt'],
         });
-        return userInfo.dataValues;
+        return userInfo;
+    },
+    async updateUserInfo(data) {
+        const model = {
+            user_name: '',
+            systems: '',
+            password: '',
+            kind: '',
+        };
+        const updata = {};
+        Object.keys(model).forEach((key) => {
+            if (key === 'user_name') {
+                if (data.userName) updata[key] = data.userName;
+            } else {
+                if (data[key] || data[key] === 0) updata[key] = data[key];
+            }
+        });
+        const result = await User.update(
+            {
+                ...updata,
+                updatedAt: new Date(),
+            },
+            {
+                where: {
+                    id: data.id,
+                },
+            },
+        );
+        return result[0] === 1;
     },
     async butchGetUserByIds(idArr) {
       const userInfos = await User.findAll({
@@ -35,14 +63,14 @@ module.exports = {
         return userInfo;
     },
     async addUser(data) {
-        await User.create({
+        const ret = await User.create({
             account: data.account,
             user_name: data.account,
             password: data.password,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
-        return true;
+        return ret;
     },
     async updatePasswordById(userId, newPassword) {
         const result = await User.update(

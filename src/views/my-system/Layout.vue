@@ -89,11 +89,11 @@ export default {
         },
         {
           title:'负责人',
-          key:'owner',
+          key:'ownerName',
         },
         {
           title:'操作人',
-          key:'operators',
+          key:'operatorNames',
         },
         {
           title:'创建时间',
@@ -155,9 +155,7 @@ export default {
         } else {
           this.$Message.error(ret.msg);
         }
-        console.log(163,ret)
       }
-      console.log('新建项目',this.newSystem)
     },
     resetSystemData(){
       this.systemData = Object.assign(this.systemData,{
@@ -193,7 +191,19 @@ export default {
       // axios请求数据
       const ret = await this.$axios.post('/system/page',params);
       if(ret.ok){
-        this.systemList = ret.data;
+        let list = ret.data.list;
+        list = list.map((e) => {
+          e.ownerName = e.ownerInfo.user_name;
+          e.operatorNames = e.operatorInfos.reduce((p,c) => {
+            return `${p},${c.user_name}`
+          },'');
+          e.operatorNames = e.operatorNames.substr(1);
+          return e;
+        });
+        this.systemList = {
+          list,
+          total:ret.data.total
+        };
       } else this.$Message.error('获取列表失败');
     },
     sizeChange(size){
