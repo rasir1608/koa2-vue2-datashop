@@ -10,7 +10,7 @@
         Input(v-model='userInfo.password',type='password')
       li
         Button(type='primary',@click="submit") 登陆
-        Button(type='dashed',@click='$router.push("/register")') 去注册
+        Button(type='dashed',@click='$router.push("/mine/register")') 去注册
 </template>
 <script>
 export default {
@@ -27,7 +27,9 @@ export default {
       if(this.userInfo.account && this.userInfo.password){
         const ret = await this.$axios.post('/user/login',this.userInfo);
         if(ret.ok){
-          this.$store.commit('SET_TOKEN',ret.token);
+          console.log(30,ret)
+          this.$store.commit('SET_TOKEN',ret.data.token);
+          this.$store.commit('USER_INFO',ret.data.userInfo);
           this.$router.push('/');
           this.$Message.success(`恭喜登录成功！`);
         } else {

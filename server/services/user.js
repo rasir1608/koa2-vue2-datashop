@@ -10,15 +10,27 @@ module.exports = {
             where: {
                 id,
             },
+            attributes: ['id', 'account', 'user_name', 'systems', 'kind', 'createdAt', 'updatedAt'],
         });
-        return userInfo;
+        return userInfo.dataValues;
     },
+    async butchGetUserByIds(idArr) {
+      const userInfos = await User.findAll({
+          where: {
+              id: {
+                $in: idArr,
+              },
+          },
+          attributes: ['id', 'account', 'user_name', 'systems', 'kind', 'createdAt', 'updatedAt'],
+      });
+      return userInfos;
+  },
     async getUserByAccount(account) {
-        console.log(17, account);
         const userInfo = await User.findOne({
             where: {
                 account,
             },
+            attributes: ['id', 'account', 'user_name', 'password', 'systems', 'kind', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },

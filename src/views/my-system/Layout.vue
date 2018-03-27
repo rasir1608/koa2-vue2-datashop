@@ -15,15 +15,17 @@
     Page(v-if="systemList.total",:total="systemList.total",show-sizer,show-total,:current.sync="systemData.current",
     :page-size="systemData.size",@on-page-size-change="sizeChange")
     Modal(v-model="createSystemShow",title="新建系统",@on-ok="createNewSystem")
-      Form(:model="newSystem",:rules="createRules",:label-width="100")
+      Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
         FormItem(prop="name",label="系统名称：")
-          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称",@blur="checkTheName")
+          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
         FormItem(prop="remarks",label="系统备注：")
           Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
 
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   data(){
     const validateId = (rule,value,callback) => {
@@ -124,14 +126,37 @@ export default {
       }
     },
   },
+  computed: {
+    ...mapGetters([
+      'userInfo'
+    ]),
+  },
+  mounted () {
+    if(this.userInfo.id) this.systemData.owner = this.userInfo.id;
+    this.searchSystem();
+  },
   methods:{
-    checkTheName(){
-      if(!/^\s*$/.test(this.newSystem.name)){
-          // 发送ajax请求验证name是否被使用
-          console.log(115,this.newSystem.name)
+    async createNewSystem(){
+        let ok = true;
+        this.$refs['newSystem'].validate((valid) => {
+            if (!valid) {
+                this.$Message.error('查询参数不正确');
+                ok = false;
+            }
+        })
+      if(ok){
+        const ret = await this.$axios.post('/system/insert',{
+          ...this.newSystem,
+          owner:this.userInfo.id,
+          operators:`${this.userInfo.id}`,
+        });
+        if(ret.ok){
+          this.searchSystem();
+        } else {
+          this.$Message.error(ret.msg);
         }
-    },
-    createNewSystem(){
+        console.log(163,ret)
+      }
       console.log('新建项目',this.newSystem)
     },
     resetSystemData(){
@@ -142,7 +167,7 @@ export default {
       });
       this.systemData.current === 1 ? this.searchSystem() : this.systemData.current = 1;
     },
-    searchSystem(){
+    async searchSystem(){
       let ok = true;
       this.$refs['systemForm'].validate((valid) => {
           if (!valid) {
@@ -165,8 +190,11 @@ export default {
         if(fun) params = Object.assign(params,fun(this.systemData));
         else if(this.systemData[key]) params[key] = this.systemData[key];
       });
-      console.log(params,this.systemData)
       // axios请求数据
+      const ret = await this.$axios.post('/system/page',params);
+      if(ret.ok){
+        this.systemList = ret.data;
+      } else this.$Message.error('获取列表失败');
     },
     sizeChange(size){
       this.systemData.size = size;

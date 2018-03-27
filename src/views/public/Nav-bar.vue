@@ -10,7 +10,9 @@
           | 项目管理
     Sider(hide-trigger)
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        MenuItem(name='/mine/login')
+        li.ivu-menu-item(v-if="userInfo.name")
+          | {{userInfo.name}}
+        MenuItem(v-else,name='/mine/login')
           | 登陆
         MenuItem(name='/mine/register')
           | 注册
@@ -18,6 +20,7 @@
           | 注销
 </template>
 <script>
+import { mapGetters } from 'vuex';
 export default {
   data(){
     return{
@@ -26,11 +29,26 @@ export default {
   watch:{
   },
   computed:{
+    ...mapGetters([
+      'userInfo'
+    ]),
     menuManager(){
       let path = this.$route.path;
       if(/^\/my-interface/.test(path)) path = '/my-interface';
       return path || '';
     },
+  },
+  async created(){
+    if(!this.userInfo.name){
+      const ret = await this.$axios.get('/user/userInfo')
+      if(ret.ok){
+        this.$store.commit('USER_INFO',ret.data.data);
+      } else {
+        this.$store.commit('LOGOUT');
+        this.$Message.error('请重新登录');
+        this.$router.push('/user/login');
+      }
+    }
   },
   methods:{
     menuChange(val){
@@ -42,6 +60,7 @@ export default {
 
 <style lang="scss" scoped>
   .nav-bar{
+    background: #495060;
     .ivu-menu-horizontal{
       height: 100%;
     }

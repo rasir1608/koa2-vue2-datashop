@@ -12,7 +12,7 @@
         p 账号注销成功
         p 跳转到登陆页面
       div(slot='footer')
-        Button(type='success', size='large', long, @click='$router.push("/login")') 确定
+        Button(type='success', size='large', long, @click='logout') 确定
 
 </template>
 <script>
@@ -32,6 +32,12 @@ export default {
       };
     },100)
   },
+  methods: {
+    logout(){
+      this.$store.commit('LOGOUT');
+      this.$router.push("/user/login");
+    },
+  }
 }
 </script>
 <style lang="scss">

@@ -9,11 +9,14 @@ const Body = require('koa-body');
 const favicon = require('koa-favicon');
 const JwtKoa = require('koa-jwt');
 const userRouter = require('./server/routers/user');
+const systemRouter = require('./server/routers/system');
+const ErrorRouter = require('./server/routers/error-router');
 // const history = require('koa2-connect-history-api-fallback');
 
 const app = new Koa();
 
 app
+    .use(ErrorRouter())
     .use(favicon(path.resolve(__dirname, './public/favicon.jpg')))
     .use(Static(path.resolve(__dirname, './public')))
     .use(Logger())
@@ -27,7 +30,9 @@ app.on('error', (err) => {
     console.log('server error', err);
   });
 app
-    .use(userRouter.routes(), userRouter.allowedMethods());
+    .use(userRouter.routes(), userRouter.allowedMethods())
+    .use(systemRouter.routes(), systemRouter.allowedMethods())
+    ;
 
 
 app.listen(8888, () => {

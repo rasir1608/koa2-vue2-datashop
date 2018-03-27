@@ -1,6 +1,9 @@
 const userServer = require('../services/user.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const util = require('util');
+
+const verify = util.promisify(jwt.verify); // 解密
 
 module.exports = {
     async getUserInfoById(ctx) {
@@ -47,8 +50,13 @@ module.exports = {
                 };
             } else {
                 const userToken = {
-                    name: userInfo.suer_name,
+                    account: userInfo.account,
+                    name: userInfo.user_name,
                     id: userInfo.id,
+                    systems: userInfo.systems || '',
+                    kind: userInfo.kind,
+                    createdAt: userInfo.createdAt,
+                    updatedAt: userInfo.updatedAt,
                 };
                 const token = jwt.sign({
                     data: userToken,
@@ -57,7 +65,10 @@ module.exports = {
                 }, 'data-shop-secret');
                 ctx.body = {
                     ok: true,
-                    token,
+                    data: {
+                      token,
+                      userInfo: userToken,
+                    },
                 };
             }
         } else {
@@ -67,5 +78,24 @@ module.exports = {
                 msg: '用户不存在！',
             };
         }
+    },
+    async getUserInfo(ctx) {
+      const token = ctx.header.authorization;
+      console.log(79, token);
+      let payload;
+      if (token) {
+        payload = await verify(token.split(' ')[1], 'data-shop-secret');
+        ctx.body = {
+          ok: true,
+          data: payload,
+          msg: '',
+        };
+      } else {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: '请重新登录',
+        };
+      }
     },
 };
