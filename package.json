@@ -1,7 +1,7 @@
 {
-  "name": "koa-vue-todolist",
+  "name": "koa-vue-datashop",
   "version": "1.0.0",
-  "description": "koa-vue-todolist-rasir",
+  "description": "koa-vue-datashop-rasir",
   "author": "rasir",
   "license": "ISC",
   "scripts": {

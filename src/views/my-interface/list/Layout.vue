@@ -5,12 +5,12 @@
         Input(type="text",v-model="interfaceData.name",placeholder="接口名称")
       FormItem(prop="id",label="接口ID：")
         Input(type="text",v-model="interfaceData.id",placeholder="接口ID")
-      FormItem(prop="owner",label="接口创建人：")
-        Input(type="text",v-model="interfaceData.owner",placeholder="接口创建人")
-      FormItem(prop="owner",label="请求方式：")
+      FormItem(prop="creator",label="接口创建人：")
+        Input(type="text",v-model="interfaceData.creator",placeholder="接口创建人")
+      FormItem(prop="method",label="请求方式：")
         Input(type="text",v-model="interfaceData.method",placeholder="请求方式")
-      FormItem(prop="owner",label="ContentType：")
-        Input(type="text",v-model="interfaceData.ContentType",placeholder="ContentType")
+      FormItem(prop="contentType",label="请求头：")
+        Input(type="text",v-model="interfaceData.contentType",placeholder="contentType")
       FormItem
         Button(type="default",@click="resetInterfaceData") 重置
         Button(type="primary",@click="interfaceData.current === 1 ? searchInterface() : interfaceData.current = 1") 查询
@@ -32,7 +32,7 @@ export default {
                 name:'',
                 url:'',
                 method:'',
-                ContentType:'',
+                contentType:'',
                 creator:'',
                 oprator:'',
                 systemId:'',
@@ -45,7 +45,19 @@ export default {
                   key:'id'
               },{
                   title:'接口名称',
-                  key:'name'
+                  key:'name',
+                  render:(h,params) => {
+                      return h('a',{
+                          props:{
+                              href:'javascript:void(0);'
+                          },
+                          on:{
+                              click:() => {
+                                  this.$router.push(`/my-interface/edite/${params.row.id}`);
+                              },
+                          }
+                      },params.row.name)
+                  }
               },{
                   title:'接口URL',
                   key:'url'
@@ -54,19 +66,19 @@ export default {
                   key:'method'
               },{
                   title:'请求头',
-                  key:'ContentType'
+                  key:'contentType'
               },{
                   title:'创建者',
-                  key:'creator'
+                  key:'creatorName'
               },{
                   title:'修改者',
-                  key:'oprator'
+                  key:'opratorName'
               },{
                   title:'所属系统',
-                  key:'systemId'
+                  key:'systemName'
               },{
                   title:'创建时间',
-                  key:'createAt'
+                  key:'createdAt'
               }
           ],
           interfaceList:{
@@ -83,11 +95,14 @@ export default {
         deep:true
     },
   },
+  created(){
+      this.searchInterface();
+  },
   methods:{
       resetInterfaceData(){
 
       },
-      searchInterface(){
+      async searchInterface(){
         const trans = {
             current:(interfaceData) => {
             return {offset:(interfaceData.current -1) * interfaceData.size};
@@ -102,7 +117,15 @@ export default {
             if(fun) params = Object.assign(params,fun(this.interfaceData));
             else if(this.interfaceData[key]) params[key] = this.interfaceData[key];
         });
-        console.log(params,this.interfaceData)
+        const ret = await this.$axios.post('/interface/page',params);
+        if(ret.ok){
+            this.interfaceList = {
+                list:ret.data.list,
+                total:ret.data.total
+            }
+        } else {
+            this.$Message.error(ret.msg || '获取接口分页信息失败！');
+        }
         // axios请求数据
       },
       sizeChange(){

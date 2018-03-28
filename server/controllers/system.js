@@ -5,7 +5,6 @@ module.exports = {
     async page(ctx) {
       const data = ctx.request.body;
       const ret = await systemServer.getSystemListPage(data);
-      console.log(8, ret);
       let list = ret.rows;
       if (ret.rows.length > 0) {
          const pFn = await ret.rows.map(async (row) => {
@@ -38,17 +37,19 @@ module.exports = {
         };
       } else {
         const ret = await systemServer.createSystem(data);
-        const ownerId = data.owner;
-        const userInfo = await userServer.getUserById(ownerId);
-        if (userInfo.systems)userInfo.systems = `${userInfo.systems},${ret.id}`;
-        else userInfo.systems = `${ret.id}`; 
-        const abc = await userServer.updateUserInfo(userInfo);
-        console.log(46, abc);
-        ctx.body = {
-          ok: true,
-          data: ret,
-          msg: '项目保存成功',
-        };
+        if (ret) {
+          ctx.body = {
+            ok: true,
+            data: ret,
+            msg: '项目保存成功',
+          };
+        } else {
+          ctx.body = {
+            ok: false,
+            data: '',
+            msg: '项目保存失败',
+          };
+        }
       }
     },
     async getAll(ctx) {

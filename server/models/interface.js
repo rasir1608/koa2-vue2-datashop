@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 'GET',
     },
-    ContentType: {
+    contentType: {
       type: DataTypes.STRING(255),
       allowNull: true,
       defaultValue: 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -38,7 +38,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    respones: {
+    response: {
       type: DataTypes.TEXT,
       allowNull: true,
     },

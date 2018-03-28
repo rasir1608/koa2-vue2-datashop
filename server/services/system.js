@@ -48,6 +48,14 @@ const systemServer = {
       });
       return ret;
     },
+    async getOneSystem(data) {
+      const ret = await system.findOne({
+        where: {
+          ...data,
+        },
+      });
+      return ret;
+    },
     async delSystemById(id) {
       const ret = await system.destroy({
         where: {
@@ -79,7 +87,7 @@ const systemServer = {
       });
       data.updatedAt = new Date();
       const ret = await system.update(
-        { ...data },
+        data,
         { where: {
           id: systemData.id,
         } });

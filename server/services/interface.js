@@ -11,7 +11,7 @@ const model = {
     creator: '',
     oprator: '',
     request: '',
-    respones: '',
+    response: '',
     systemId: '',
     remark: '',
     createdAt: '',
@@ -30,6 +30,21 @@ const interfaceServer = {
             updatedAt: new Date(),
         });
         return ret;
+    },
+    async updateInterface(data) {
+        const id = data.id;
+        delete data.id;
+        const ret = await interfaceDb.update(
+            data,
+            {
+                where: {
+                    id,
+                },
+            },
+            
+        );
+        console.log(46, ret);
+        return ret[0] === 1;
     },
     async findOneInterface(data) {
         const iData = {};
