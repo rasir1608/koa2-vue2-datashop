@@ -51,25 +51,6 @@ module.exports = {
         };
       }
     },
-    async getSystemByIds(ctx) {
-      const ids = ctx.query.ids;
-      let idArr = [];
-      if (ids) idArr = ids.split(',');
-      const systemInfos = await systemServer.getAllByIds(idArr);
-      if (systemInfos) {
-        ctx.body = {
-          ok: true,
-          data: systemInfos,
-          msg: '',
-        };
-      } else {
-        ctx.body = {
-          ok: false,
-          data: '',
-          msg: '项目查询失败',
-        };
-      }
-    },
     async getAll(ctx) {
       const ret = await systemServer.getAllSystem();
       if (ret) {
@@ -83,6 +64,26 @@ module.exports = {
           ok: false,
           data: '',
           msg: '项目查询失败',
+        };
+      }
+    },
+    async getAllByOperator(ctx) {
+      const operator = ctx.query.userId;
+      const ret = await systemServer.getAllByOperator(`%${operator}%`);
+      if (ret) {
+        const regStr = `(,|\\b)${operator}(,|\\b)`;
+        const regExp = new RegExp(regStr);
+        const systems = ret.filter(s => regExp.test(s.getDataValue('operators')));
+        ctx.body = {
+          ok: true,
+          data: systems,
+          msg: '',
+        };
+      } else {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: '可用项目查询失败',
         };
       }
     },

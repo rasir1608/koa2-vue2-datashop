@@ -81,7 +81,8 @@ export default {
       ])
   },
   async created(){
-      const ret = await this.$axios.get('/system/mySystems',{params:{ids:this.userInfo.systems}})
+    console.log(this.userInfo.id)
+      const ret = await this.$axios.get('/system/mySystems',{params:{userId:this.userInfo.id}})
       if(ret.ok){
           this.systemOptions = ret.data.map(e => ({id:e.id,name:e.name}))
       } else {
@@ -100,6 +101,7 @@ export default {
         })
         const request = this.requestEditor.getValue();
         const response = this.responseEditor.getValue();
+        console.log(request,utils.isJsonString(request),response,utils.isJsonString(response),ok)
         if((!request || utils.isJsonString(request)) && ( !response || utils.isJsonString(response)) && ok){
             this.interface.request = request;
             this.interface.response = response;

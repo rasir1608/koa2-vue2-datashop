@@ -19,7 +19,6 @@ const systemServer = {
         if (data.name) where.name = { $like: `%${data.name}%` };
         else if (data[key]) where[key] = data[key];
       });
-      console.log(21, where);
       const ret = await system.findAndCountAll({
         where,
         offset: data.offset,
@@ -27,11 +26,11 @@ const systemServer = {
       });
       return ret;
     },
-    async getAllByIds(idArr) {
+    async getAllByOperator(operator) {
       const ret = await system.findAll({
         where: {
-          id: {
-            $in: idArr,
+          operators: {
+            $like: operator,
           },
         },
       });
