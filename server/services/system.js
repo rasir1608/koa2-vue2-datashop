@@ -37,7 +37,7 @@ const systemServer = {
       return ret;
     },
     async getAllSystem() {
-      const ret = await datashop.query('select * from system', { type: datashop.QueryTypes.SELECT });
+      const ret = await datashop.query('select * from datashop.system', { type: datashop.QueryTypes.SELECT });
       return ret;
     },
     async getSystemByName(name) {

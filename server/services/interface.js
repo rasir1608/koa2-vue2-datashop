@@ -34,6 +34,7 @@ const interfaceServer = {
     async updateInterface(data) {
         const id = data.id;
         delete data.id;
+        data.updatedAt = new Date();
         const ret = await interfaceDb.update(
             data,
             {
@@ -43,17 +44,12 @@ const interfaceServer = {
             },
             
         );
-        console.log(46, ret);
         return ret[0] === 1;
     },
     async findOneInterface(data) {
-        const iData = {};
-        Object.keys(model).forEach((key) => {
-            if (data[key] || data[key] === 0) iData[key] = data[key];
-        });
         const ret = await interfaceDb.findOne({
             where: {
-                ...iData,
+                ...data,
             },
         });
         return ret;

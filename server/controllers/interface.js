@@ -38,7 +38,7 @@ module.exports = {
         }
     },
     async findById(ctx) {
-        const id = ctx.params.id;
+        const id = ctx.query.id;
         const ret = await interfaceServer.findOneInterface({ id });
         if (ret) {
             ctx.body = {
@@ -83,7 +83,6 @@ module.exports = {
     async update(ctx) {
         const data = ctx.request.body;
         const ret = interfaceServer.updateInterface(data);
-        console.log(34, ret);
         if (ret) {
             ctx.body = {
                 ok: true,

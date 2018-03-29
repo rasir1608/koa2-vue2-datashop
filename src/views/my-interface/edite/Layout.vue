@@ -3,7 +3,7 @@
     Form.interface-form(ref="interfaceForm",:model="interface",:rules="intefaceRules",:label-width="100")
         .interface-data
             FormItem(label="接口名称：",prop="name")
-                Input(v-model="interface.name",type="text")
+                Input(v-model="interface.name",type="text",:disabled="isEdite")
             FormItem(label="接口URL：",prop="url")
                 Input(v-model="interface.url",type="text")
             FormItem(label="请求方式：",prop="method")
@@ -78,13 +78,15 @@ export default {
   computed:{
       ...mapGetters([
           'userInfo'
-      ])
+      ]),
+      isEdite(){
+        return /^\d+$/.test(this.$route.params.id);
+      },
   },
   async created(){
-      this.getUseableSystem();
+    this.getUseableSystem();
       const id = this.$route.params.id;
-      if(id > 0) await this.getEditeInterface();
-      console.log(87)
+      if(id > 0) await this.getEditeInterface(id);
   },
   async mounted(){
     if(!this.requestEditor) this.requestEditor = this.startCodeMirror('interface-request',this.interface.request);
@@ -133,6 +135,7 @@ export default {
         }
     },
     async updateInterface(){
+        this.interface.oprator = this.userInfo.id;
         const ret = await this.$axios.post('/interface/update',this.interface);
         if(ret.ok){
             this.$Message.success('接口更新成功！');
@@ -164,7 +167,6 @@ export default {
             foldGutter:true,
             indentUnit:4
         });
-        console.log(165,initValue)
         if(initValue) editor.setValue(initValue);
         return editor;
     },
