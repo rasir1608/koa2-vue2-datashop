@@ -27,7 +27,6 @@ export default {
       if(this.userInfo.account && this.userInfo.password){
         const ret = await this.$axios.post('/user/login',this.userInfo);
         if(ret.ok){
-          console.log(30,ret)
           this.$store.commit('SET_TOKEN',ret.data.token);
           this.$store.commit('USER_INFO',ret.data.userInfo);
           this.$router.push('/');

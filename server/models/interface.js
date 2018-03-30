@@ -8,6 +8,10 @@ module.exports = function (sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true,
     },
+    rid: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+    },
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -26,12 +30,12 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: 'application/x-www-form-urlencoded; charset=UTF-8',
     },
-    creator: {
-      type: DataTypes.INTEGER(11),
+    creatorRid: {
+      type: DataTypes.STRING(8),
       allowNull: false,
     },
-    oprator: {
-      type: DataTypes.INTEGER(11),
+    opratorRid: {
+      type: DataTypes.STRING(8),
       allowNull: false,
     },
     request: {
@@ -42,8 +46,8 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    systemId: {
-      type: DataTypes.INTEGER(11),
+    systemRid: {
+      type: DataTypes.STRING(10),
       allowNull: false,
     },
     remark: {

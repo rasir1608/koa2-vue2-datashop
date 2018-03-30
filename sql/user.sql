@@ -17,11 +17,11 @@ USE `datashop`;
 
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT comment '用户id',
+  `rid` varchar(8) DEFAULT NULL comment '用户rid',
   `account` char(50) NOT NULL comment '用户账号',
-  `user_name` char(50) NOT NULL comment '用户姓名',
+  `userName` char(50) NOT NULL comment '用户姓名',
   `password` char(128) NOT NULL comment '密码',
-  `systems` varchar(255) comment '用户拥有权限的系统id',
-  `kind` int(11) DEFAULT 1 comment '用户权限 1普通用户，2系统管理员，3项目管理员',
+  `type` int(11) DEFAULT 1 comment '用户权限 1普通用户，2系统管理员，3项目管理员',
   `createdAt` timestamp comment '创建时间',
   `updatedAt` timestamp comment '更新时间',
   PRIMARY KEY (`id`)

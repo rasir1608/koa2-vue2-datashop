@@ -14,4 +14,11 @@ export default {
             return false;
         }
     },
+    getRid(id) {
+      let rid = Number(Date.now() + id).toString(36);
+      while (rid.length < 8) {
+        rid = `0${rid}`;
+      }
+      return rid;
+    },
 };

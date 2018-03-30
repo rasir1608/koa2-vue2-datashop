@@ -1,1 +1,1 @@
-sequelize-auto -o "./models" -d datashop -h 127.0.0.1 -u root -p 3306 -x 123456 -e mysql
+sequelize-auto -o "./server/models" -d datashop -h 127.0.0.1 -u root -p 3306 -x 123456 -e mysql

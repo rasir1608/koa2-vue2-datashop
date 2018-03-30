@@ -26,11 +26,11 @@ const systemServer = {
       });
       return ret;
     },
-    async getAllByOperator(operator) {
+    async getAllByOperator(operatorRid) {
       const ret = await system.findAll({
         where: {
           operators: {
-            $like: operator,
+            $like: operatorRid,
           },
         },
       });
@@ -66,9 +66,9 @@ const systemServer = {
     },
     async createSystem(systemData) {
       const ret = await system.create({
-          owner: systemData.owner,
+          ownerRid: systemData.ownerRid,
           name: systemData.name,
-          operators: systemData.operators,
+          operatorRids: systemData.operatorRids,
           remarks: systemData.remarks,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -77,9 +77,10 @@ const systemServer = {
     },
     async updateSystem(systemData) {
       const data = {
-        owner: '',
+        ownerRid: '',
         name: '',
-        operators: '',
+        operatorRids: '',
+        rid: '',
       };
       Object.keys(data).forEach((key) => {
         if (systemData[key] === '') data[key] = null;

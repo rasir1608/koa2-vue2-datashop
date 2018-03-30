@@ -1,6 +1,7 @@
 const interfaceServer = require('../services/interface.js');
 const userServer = require('../services/user.js');
 const systemServer = require('../services/system.js');
+const tool = require('../utils');
 
 module.exports = {
     async page(ctx) {
@@ -65,7 +66,10 @@ module.exports = {
             };
         } else {
             const ret = await interfaceServer.insertInterface(data);
-            if (ret) {
+            const id = ret.getDataValue('id');
+            const rid = tool.getRid(id, 10);
+            const res = await interfaceServer.updateInterface({ id, rid });
+            if (res) {
                 ctx.body = {
                     ok: true,
                     data: ret,

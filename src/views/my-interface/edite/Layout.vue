@@ -13,9 +13,9 @@
             FormItem(label="请求头设置：",prop="contentType")
                 Select(v-model="interface.contentType",placeholde="请选择请求头")
                     Option(v-for="(item,index) in contentTypeOptions",:key='index',:value='item') {{item}}
-            FormItem(label="所属项目：",prop="systemId")
-                Select(v-model="interface.systemId",placeholde="请选择接口所属项目")
-                    Option(v-for="(item,index) in systemOptions",:key='index',:value='item.id') {{item.name}}
+            FormItem(label="所属项目：",prop="systemRid")
+                Select(v-model="interface.systemRid",placeholde="请选择接口所属项目")
+                    Option(v-for="(item,index) in systemOptions",:key='index',:value='item.rid') {{item.name}}
             FormItem(label="备注：",prop="remark")
                 Input(v-model="interface.remark",type="textarea",:autosize="{minRows: 2,maxRows: 5}")
         .interface-request
@@ -49,7 +49,7 @@ export default {
               contentType:[
                   {required:true,message:'请选择请求头'}
               ],
-              systemId:[
+              systemRid:[
                   {required:true,message:'请选择所属项目'}
               ],
               remark:[
@@ -66,7 +66,7 @@ export default {
             contentType:'application/x-www-form-urlencoded',
             creator:'',
             oprator:'',
-            systemId:'',
+            systemRid:'',
             request:'',
             response:'',
             remark:'',
@@ -106,7 +106,7 @@ export default {
     async getUseableSystem(){
         const ret = await this.$axios.get('/system/mySystems',{params:{userId:this.userInfo.id}})
         if(ret.ok){
-            this.systemOptions = ret.data.map(e => ({id:e.id,name:e.name}))
+            this.systemOptions = ret.data.map(e => ({rid:e.rid,name:e.name}))
         } else {
             this.$Message.error('可用项目获取失败！');
         }
