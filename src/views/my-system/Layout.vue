@@ -147,8 +147,8 @@ export default {
       if(ok){
         const ret = await this.$axios.post('/system/insert',{
           ...this.newSystem,
-          owner:this.userInfo.id,
-          operators:`${this.userInfo.id}`,
+          owner:this.userInfo.rid,
+          operators:`${this.userInfo.rid}`,
         });
         if(ret.ok){
           this.searchSystem();

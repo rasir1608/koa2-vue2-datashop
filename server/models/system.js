@@ -8,15 +8,19 @@ module.exports = function (sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true,
     },
-    owner: {
-      type: DataTypes.INTEGER(11),
+    rid: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+    },
+    ownerRid: {
+      type: DataTypes.STRING(8),
       allowNull: false,
     },
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    operators: {
+    operatorRids: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },

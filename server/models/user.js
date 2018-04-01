@@ -8,11 +8,15 @@ module.exports = function (sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true,
     },
+    rid: {
+      type: DataTypes.STRING(8),
+      allowNull: true,
+    },
     account: {
       type: DataTypes.CHAR(50),
       allowNull: false,
     },
-    user_name: {
+    userName: {
       type: DataTypes.CHAR(50),
       allowNull: false,
     },
@@ -20,11 +24,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.CHAR(128),
       allowNull: false,
     },
-    systems: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    kind: {
+    type: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '1',

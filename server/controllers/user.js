@@ -2,6 +2,7 @@ const userServer = require('../services/user.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const util = require('util');
+const tool = require('../utils');
 
 const verify = util.promisify(jwt.verify); // 解密
 
@@ -13,6 +14,23 @@ module.exports = {
             ok: true,
             data: result,
         };
+    },
+    async getUserInfoByRid(ctx) {
+      const rid = ctx.params.rid;
+      const result = await userServer.getOneUserInfo({ rid });
+      if (result) {
+        ctx.body = {
+          ok: true,
+          data: result,
+          msg: '',
+        };
+      } else {
+        ctx.body = {
+          ok: true,
+          data: '',
+          msg: '获取信息失败',
+        };
+      }
     },
     async registerAuth(ctx) {
         const userInfo = ctx.request.body;
@@ -26,17 +44,29 @@ module.exports = {
         } else {
             const salt = bcrypt.genSaltSync(10);
             const hash = bcrypt.hashSync(userInfo.password, salt);
-            console.log(26, hash);
-            await userServer.addUser({
+            const user = await userServer.addUser({
                 account: userInfo.account,
                 password: hash,
             });
-            ctx.body = {
+            const rid = tool.getRid(user.getDataValue('id'));
+            const upUser = await userServer.updateUserInfo({
+              id: user.id,
+              rid,
+            });
+            if (upUser) {
+              ctx.body = {
                 ok: true,
-                data: 1,
+                data: upUser,
                 msg: '账号保存成功',
-            };
-        }
+              };
+            } else {
+              ctx.body = {
+                ok: true,
+                data: '',
+                msg: '账号保存失败',
+              };
+            }
+          }
     },
     async postUserAuth(ctx) {
         const data = ctx.request.body;
@@ -55,6 +85,7 @@ module.exports = {
                     id: userInfo.id,
                     systems: userInfo.systems || '',
                     kind: userInfo.kind,
+                    rid: userInfo.rid,
                     createdAt: userInfo.createdAt,
                     updatedAt: userInfo.updatedAt,
                 };

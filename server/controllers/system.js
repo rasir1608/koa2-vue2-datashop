@@ -1,5 +1,6 @@
 const systemServer = require('../services/system.js');
 const userServer = require('../services/user.js');
+const tool = require('../utils');
 
 module.exports = {
     async page(ctx) {
@@ -37,7 +38,10 @@ module.exports = {
         };
       } else {
         const ret = await systemServer.createSystem(data);
-        if (ret) {
+        const id = ret.getDataValue('id');
+        const rid = tool.getRid(id, 10);
+        const res = await systemServer.updateSystem({ id, rid });
+        if (res) {
           ctx.body = {
             ok: true,
             data: ret,

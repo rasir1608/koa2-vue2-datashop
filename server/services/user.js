@@ -3,32 +3,38 @@ const db = require('../db/db.js');
 const userModel = '../models/user.js';
 const datashopBase = db.datashop;
 const User = datashopBase.import(userModel);
-
+const model = {
+  userName: '',
+  password: '',
+  type: '',
+  rid: '',
+};
 module.exports = {
     async getUserById(id) {
         const userInfo = await User.findOne({
             where: {
                 id,
             },
-            attributes: ['id', 'account', 'user_name', 'systems', 'kind', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },
+    async getOneUserInfo(data) {
+      const where = {};
+      Object.keys(model).forEach((key) => {
+        if (data[key] || data[key] === 0) where[key] = data[key];
+      });
+      const userInfo = await User.findOne({
+        where,
+        attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+    });
+    return userInfo;
+    },
     async updateUserInfo(data) {
-        const model = {
-            user_name: '',
-            systems: '',
-            password: '',
-            kind: '',
-        };
         const updata = {};
         Object.keys(model).forEach((key) => {
-            if (key === 'user_name') {
-                if (data.userName) updata[key] = data.userName;
-            } else {
-                if (data[key] || data[key] === 0) updata[key] = data[key];
-            }
-        });
+            if (data[key] || data[key] === 0) updata[key] = data[key];
+          });
         const result = await User.update(
             {
                 ...updata,
@@ -49,7 +55,7 @@ module.exports = {
                 $in: idArr,
               },
           },
-          attributes: ['id', 'account', 'user_name', 'systems', 'kind', 'createdAt', 'updatedAt'],
+          attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
       });
       return userInfos;
   },
@@ -58,14 +64,14 @@ module.exports = {
             where: {
                 account,
             },
-            attributes: ['id', 'account', 'user_name', 'password', 'systems', 'kind', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'account', 'rid', 'userName', 'password', 'type', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },
     async addUser(data) {
         const ret = await User.create({
             account: data.account,
-            user_name: data.account,
+            userName: data.account,
             password: data.password,
             createdAt: new Date(),
             updatedAt: new Date(),

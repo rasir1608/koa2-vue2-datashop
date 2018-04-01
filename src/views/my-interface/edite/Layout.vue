@@ -3,7 +3,7 @@
     Form.interface-form(ref="interfaceForm",:model="interface",:rules="intefaceRules",:label-width="100")
         .interface-data
             FormItem(label="接口名称：",prop="name")
-                Input(v-model="interface.name",type="text")
+                Input(v-model="interface.name",type="text",:disabled="isEdite")
             FormItem(label="接口URL：",prop="url")
                 Input(v-model="interface.url",type="text")
             FormItem(label="请求方式：",prop="method")
@@ -13,9 +13,9 @@
             FormItem(label="请求头设置：",prop="contentType")
                 Select(v-model="interface.contentType",placeholde="请选择请求头")
                     Option(v-for="(item,index) in contentTypeOptions",:key='index',:value='item') {{item}}
-            FormItem(label="所属项目：",prop="systemId")
-                Select(v-model="interface.systemId",placeholde="请选择接口所属项目")
-                    Option(v-for="(item,index) in systemOptions",:key='index',:value='item.id') {{item.name}}
+            FormItem(label="所属项目：",prop="systemRid")
+                Select(v-model="interface.systemRid",placeholde="请选择接口所属项目")
+                    Option(v-for="(item,index) in systemOptions",:key='index',:value='item.rid') {{item.name}}
             FormItem(label="备注：",prop="remark")
                 Input(v-model="interface.remark",type="textarea",:autosize="{minRows: 2,maxRows: 5}")
         .interface-request
@@ -49,7 +49,7 @@ export default {
               contentType:[
                   {required:true,message:'请选择请求头'}
               ],
-              systemId:[
+              systemRid:[
                   {required:true,message:'请选择所属项目'}
               ],
               remark:[
@@ -66,7 +66,7 @@ export default {
             contentType:'application/x-www-form-urlencoded',
             creator:'',
             oprator:'',
-            systemId:'',
+            systemRid:'',
             request:'',
             response:'',
             remark:'',
@@ -78,13 +78,15 @@ export default {
   computed:{
       ...mapGetters([
           'userInfo'
-      ])
+      ]),
+      isEdite(){
+        return /^\d+$/.test(this.$route.params.id);
+      },
   },
   async created(){
-      this.getUseableSystem();
+    this.getUseableSystem();
       const id = this.$route.params.id;
-      if(id > 0) await this.getEditeInterface();
-      console.log(87)
+      if(id > 0) await this.getEditeInterface(id);
   },
   async mounted(){
     if(!this.requestEditor) this.requestEditor = this.startCodeMirror('interface-request',this.interface.request);
@@ -104,7 +106,7 @@ export default {
     async getUseableSystem(){
         const ret = await this.$axios.get('/system/mySystems',{params:{userId:this.userInfo.id}})
         if(ret.ok){
-            this.systemOptions = ret.data.map(e => ({id:e.id,name:e.name}))
+            this.systemOptions = ret.data.map(e => ({rid:e.rid,name:e.name}))
         } else {
             this.$Message.error('可用项目获取失败！');
         }
@@ -133,6 +135,7 @@ export default {
         }
     },
     async updateInterface(){
+        this.interface.oprator = this.userInfo.id;
         const ret = await this.$axios.post('/interface/update',this.interface);
         if(ret.ok){
             this.$Message.success('接口更新成功！');
@@ -164,7 +167,6 @@ export default {
             foldGutter:true,
             indentUnit:4
         });
-        console.log(165,initValue)
         if(initValue) editor.setValue(initValue);
         return editor;
     },
