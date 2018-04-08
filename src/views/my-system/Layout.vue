@@ -5,8 +5,8 @@
         Input(type="text",v-model="systemData.name",placeholder="系统名称")
       FormItem(prop="id",label="系统ID：")
         Input(type="text",v-model="systemData.id",placeholder="系统ID")
-      FormItem(prop="owner",label="系统创建人：")
-        Input(type="text",v-model="systemData.owner",placeholder="系统创建人")
+      FormItem(prop="ownerRid",label="系统创建人：")
+        Input(type="text",v-model="systemData.ownerRid",placeholder="系统创建人")
       FormItem
         Button(type="default",@click="resetSystemData") 重置
         Button(type="primary",@click="systemData.current === 1 ? searchSystem() : systemData.current = 1") 查询
@@ -32,10 +32,6 @@ export default {
       if(value && !/^\d+$/.test(value)) callback(new Error('id必须是数字'))
       else callback()
     }
-    const validateOwner = (rule,value,callback) => {
-      if(value && !/^\d+$/.test(value)) callback(new Error('owner请填写创建人ID'))
-      else callback()
-    }
     const validateNewSystemName = async (rule,value,callback) => {
       if(!value) callback(new Error('请填写系统名称2'));
       else {
@@ -51,7 +47,7 @@ export default {
       systemData:{
         name:'',
         id:'',
-        owner:'',
+        ownerRid:'',
         current:1,
         size:10,
       },
@@ -63,9 +59,6 @@ export default {
       systemRules:{
         id:[
           { validator: validateId,trigger: 'blur' }
-        ],
-        owner:[
-          { validator: validateOwner,trigger: 'blur' }
         ]
       },
       columns:[
@@ -132,7 +125,7 @@ export default {
     ]),
   },
   mounted () {
-    if(this.userInfo.id) this.systemData.owner = this.userInfo.id;
+    if(this.userInfo.rid) this.systemData.ownerRid = this.userInfo.rid;
     this.searchSystem();
   },
   methods:{
@@ -147,8 +140,8 @@ export default {
       if(ok){
         const ret = await this.$axios.post('/system/insert',{
           ...this.newSystem,
-          owner:this.userInfo.rid,
-          operators:`${this.userInfo.rid}`,
+          ownerRid:this.userInfo.rid,
+          operatorRids:`${this.userInfo.rid}`,
         });
         if(ret.ok){
           this.searchSystem();
@@ -161,7 +154,7 @@ export default {
       this.systemData = Object.assign(this.systemData,{
         name:'',
         id:'',
-        owner:'',
+        ownerRid:'',
       });
       this.systemData.current === 1 ? this.searchSystem() : this.systemData.current = 1;
     },
@@ -193,9 +186,9 @@ export default {
       if(ret.ok){
         let list = ret.data.list;
         list = list.map((e) => {
-          e.ownerName = e.ownerInfo.user_name;
+          e.ownerName = e.ownerInfo.userName;
           e.operatorNames = e.operatorInfos.reduce((p,c) => {
-            return `${p},${c.user_name}`
+            return `${p},${c.userName}`
           },'');
           e.operatorNames = e.operatorNames.substr(1);
           return e;

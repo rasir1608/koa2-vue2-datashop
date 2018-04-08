@@ -3,19 +3,20 @@ const db = require('../db/db');
 const systemModel = '../models/system.js';
 const datashop = db.datashop;
 const system = datashop.import(systemModel);
-
+const systemDataModel = {
+  id: '',
+  rid: '',
+  ownerRid: '',
+  operatorRids: '',
+  name: '',
+  remarks: '',
+  createdAt: '',
+  updatedAt: '',
+};
 const systemServer = {
     async getSystemListPage(data) {
-      const systemData = {
-        id: '',
-        owner: '',
-        name: '',
-        operators: '',
-        createdAt: '',
-        updatedAt: '',
-      };
       const where = {};
-      Object.keys(systemData).forEach((key) => {
+      Object.keys(systemDataModel).forEach((key) => {
         if (data.name) where.name = { $like: `%${data.name}%` };
         else if (data[key]) where[key] = data[key];
       });
@@ -29,7 +30,7 @@ const systemServer = {
     async getAllByOperator(operatorRid) {
       const ret = await system.findAll({
         where: {
-          operators: {
+          operatorRids: {
             $like: operatorRid,
           },
         },
@@ -76,21 +77,14 @@ const systemServer = {
       return ret;
     },
     async updateSystem(systemData) {
-      const data = {
-        ownerRid: '',
-        name: '',
-        operatorRids: '',
-        rid: '',
-      };
-      Object.keys(data).forEach((key) => {
-        if (systemData[key] === '') data[key] = null;
-        else if (systemData[key]) data[key] = systemData[key];
-      });
-      data.updatedAt = new Date();
+      const id = systemData.id;
+      systemData.updatedAt = new Date();
+      const data = Object.assign({}, systemData);
+      delete data.id;
       const ret = await system.update(
         data,
         { where: {
-          id: systemData.id,
+          id,
         } });
       return ret[0] === 1;
     },

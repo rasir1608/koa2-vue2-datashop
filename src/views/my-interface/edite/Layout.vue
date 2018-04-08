@@ -104,7 +104,7 @@ export default {
         }
     },
     async getUseableSystem(){
-        const ret = await this.$axios.get('/system/mySystems',{params:{userId:this.userInfo.id}})
+        const ret = await this.$axios.get('/system/mySystems',{params:{userRid:this.userInfo.rid}})
         if(ret.ok){
             this.systemOptions = ret.data.map(e => ({rid:e.rid,name:e.name}))
         } else {

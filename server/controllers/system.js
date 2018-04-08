@@ -9,10 +9,10 @@ module.exports = {
       let list = ret.rows;
       if (ret.rows.length > 0) {
          const pFn = await ret.rows.map(async (row) => {
-          const ownerInfo = await userServer.getUserById(row.owner);
+          const ownerInfo = await userServer.getUserByRid(row.getDataValue('ownerRid'));
           row.setDataValue('ownerInfo', ownerInfo);
-          const operators = row.operators.split(',');
-          const operatorInfos = await userServer.butchGetUserByIds(operators);
+          const operators = row.getDataValue('operatorRids').split(',');
+          const operatorInfos = await userServer.butchGetUserByRids(operators);
           row.setDataValue('operatorInfos', operatorInfos);
           return row;
         });
@@ -73,12 +73,12 @@ module.exports = {
       }
     },
     async getAllByOperator(ctx) {
-      const operator = ctx.query.userId;
-      const ret = await systemServer.getAllByOperator(`%${operator}%`);
+      const operatorRid = ctx.query.userRid;
+      const ret = await systemServer.getAllByOperator(`%${operatorRid}%`);
       if (ret) {
-        const regStr = `(,|\\b)${operator}(,|\\b)`;
+        const regStr = `(,|\\b)${operatorRid}(,|\\b)`;
         const regExp = new RegExp(regStr);
-        const systems = ret.filter(s => regExp.test(s.getDataValue('operators')));
+        const systems = ret.filter(s => regExp.test(s.getDataValue('operatorRids')));
         ctx.body = {
           ok: true,
           data: systems,

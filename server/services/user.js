@@ -19,6 +19,15 @@ module.exports = {
         });
         return userInfo;
     },
+    async getUserByRid(rid) {
+        const userInfo = await User.findOne({
+            where: {
+                rid,
+            },
+            attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+        });
+        return userInfo;
+    },
     async getOneUserInfo(data) {
       const where = {};
       Object.keys(model).forEach((key) => {
@@ -59,6 +68,17 @@ module.exports = {
       });
       return userInfos;
   },
+  async butchGetUserByRids(ridArr) {
+    const userInfos = await User.findAll({
+        where: {
+            rid: {
+              $in: ridArr,
+            },
+        },
+        attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+    });
+    return userInfos;
+},
     async getUserByAccount(account) {
         const userInfo = await User.findOne({
             where: {

@@ -10,8 +10,8 @@
           | 项目管理
     Sider(hide-trigger)
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        li.ivu-menu-item(v-if="userInfo.name")
-          | {{userInfo.name}}
+        li.ivu-menu-item(v-if="userInfo.userName")
+          | {{userInfo.userName}}
         MenuItem(v-else,name='/mine/login')
           | 登陆
         MenuItem(name='/mine/register')
@@ -39,7 +39,7 @@ export default {
     },
   },
   async created(){
-    if(!this.userInfo.name){
+    if(!this.userInfo.userName){
       const ret = await this.$axios.get('/user/userInfo')
       if(ret.ok){
         this.$store.commit('USER_INFO',ret.data);
