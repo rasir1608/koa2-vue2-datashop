@@ -24,14 +24,17 @@
         .interface-response
             FormItem(label="响应数据：",prop="response")
                 textarea(ref="interface-response")
-            
     .interface-submit
-        Button(type="primary",@click="handleSubmit") 提交
-        Button(type="ghost",@click="handleReset('interfaceForm')",style="margin-left:10px") 重置
+        router-link(to="/my-interface/list") 返回
+        a(href="javascript:void(0);",@click="handleSubmit") 提交
+        a(href="javascript:void(0);",@click="handleReset('interfaceForm')") 重置
 </template>
 <script>
 import utils from '@/utils'
 import { mapGetters } from 'vuex';
+import axios from '@/http';
+import store from '@/store';
+import { Message } from 'element-ui';
 
 export default {
   data(){
@@ -64,8 +67,8 @@ export default {
             url:'',
             method:'GET',
             contentType:'application/x-www-form-urlencoded',
-            creator:'',
-            oprator:'',
+            creatorRid:'',
+            opratorRid:'',
             systemRid:'',
             request:'',
             response:'',
@@ -77,17 +80,42 @@ export default {
   },
   computed:{
       ...mapGetters([
-          'userInfo'
+        'userInfo',
+        'systemList',
       ]),
       isEdite(){
         return /^\d+$/.test(this.$route.params.id);
       },
   },
+  async beforeRouteEnter(to, from, next){
+    const id = to.params.id;
+    if(id > 0) {
+      const ret = await axios.get('/interface/findById',{params:{id}})
+        if(ret.ok){
+          const systemList = store.state.system.systemList;
+          if(systemList.find(s => s.rid === ret.systemRid)){
+            next(($vm) => {
+              $vm.interface = ret.data;
+              if($vm.requestEditor) $vm.requestEditor.setValue($vm.interface.request); 
+              if($vm.responseEditor) $vm.responseEditor.setValue($vm.interface.response || '');
+            });
+          } else {
+            Message.error('您没有编辑该接口的权限！');
+            next(false);
+          }
+        } else {
+            Message.error('可用项目获取失败！');
+            next(false);
+        } 
+    } else {
+      next();
+    }
+  },
   async created(){
     this.getUseableSystem();
-      const id = this.$route.params.id;
-      if(id > 0) await this.getEditeInterface(id);
+    
   },
+  
   async mounted(){
     if(!this.requestEditor) this.requestEditor = this.startCodeMirror('interface-request',this.interface.request);
     if(!this.responseEditor) this.responseEditor = this.startCodeMirror('interface-response',this.interface.response);
@@ -100,16 +128,21 @@ export default {
             if(this.requestEditor) this.requestEditor.setValue(this.interface.request); 
             if(this.responseEditor) this.responseEditor.setValue(this.interface.response || '');
         } else {
-            this.$Message.error('可用项目获取失败！');
+            this.$Message.error(ret.msg);
         }
     },
-    async getUseableSystem(){
-        const ret = await this.$axios.get('/system/mySystems',{params:{userRid:this.userInfo.rid}})
-        if(ret.ok){
-            this.systemOptions = ret.data.map(e => ({rid:e.rid,name:e.name}))
-        } else {
-            this.$Message.error('可用项目获取失败！');
-        }
+    getUseableSystem(){
+      if(this.systemList.length){
+        this.systemOptions = this.systemList.map(e => ({rid:e.rid,name:e.name}))
+      } else {
+        this.$Modal.info({
+            title: '提示',
+            content: '没有可用的项目，请先到项目列表页面申请，或者新建项目',
+            onOk:() => {
+              this.$router.push('/');
+            }
+        });
+      }
     },
     async handleSubmit(){
         let ok;
@@ -121,12 +154,12 @@ export default {
             const response = this.responseEditor.getValue();
             this.interface.request = request;
             this.interface.response = response;
-            this.interface.creator = this.userInfo.id;
-            this.interface.oprator = this.userInfo.id;
+            this.interface.opratorRid = this.userInfo.rid;
             if(this.$route.params.id > 0 ) {
-                this.interface.id = this.$route.params.id;
+              this.interface.id = this.$route.params.id;
                 this.updateInterface();
             } else {
+                this.interface.creatorRid = this.userInfo.rid;
                 this.createInterface();
             }
         } else {
@@ -152,10 +185,14 @@ export default {
             this.$Message.error(ret.msg || '接口创建失败！');
         }
     },
-    handleReset (name) {
-        this.$refs[name].resetFields();
-        this.requestEditor.setValue('');
-        this.responseEditor.setValue('');
+    async handleReset (name) {
+        const id = this.$route.params.id;
+        if(id > 0) await this.getEditeInterface(id);
+        else {
+          this.$refs[name].resetFields();
+          this.requestEditor.setValue('');
+          this.responseEditor.setValue('');
+        }
     },
     startCodeMirror(name,initValue){
         const editor = window.CodeMirror.fromTextArea(this.$refs[name], {
@@ -193,8 +230,34 @@ export default {
         }
     }
      .interface-submit{
-         padding: 20px;
-         text-align: center;
+        position: fixed;
+        left: 20px;
+        top: 100px;
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        a{
+          width: 40px;
+          height: 40px;
+          margin: 5px;
+          padding: 2px;
+          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 1px solid #33aaff;
+          border-radius: 4px;
+          background: #33aaff;
+          color: #ffffff;
+          transition: all 0.2s ease;
+          &:hover{
+            background: #ffffff;
+            color: #33aaff;
+          }
+        }
      }
  }
 </style>

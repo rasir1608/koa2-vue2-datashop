@@ -56,6 +56,15 @@ module.exports = {
         }
       }
     },
+    async update(ctx) {
+      const data = ctx.request.body;
+      const ret = await systemServer.updateSystem(data);
+      ctx.body = {
+        ok: ret,
+        data: '',
+        msg: ret ? '项目更新成功' : '项目更新失败',
+      };
+    },
     async getAll(ctx) {
       const ret = await systemServer.getAllSystem();
       if (ret) {

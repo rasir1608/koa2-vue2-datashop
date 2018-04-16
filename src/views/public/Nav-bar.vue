@@ -26,8 +26,6 @@ export default {
     return{
     }
   },
-  watch:{
-  },
   computed:{
     ...mapGetters([
       'userInfo'

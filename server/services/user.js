@@ -88,6 +88,17 @@ module.exports = {
         });
         return userInfo;
     },
+    async getUserByName(userName) {
+      const userInfo = await User.findAll({
+          where: {
+              userName: {
+                $like: `%${userName}%`,
+              },
+          },
+          attributes: ['id', 'account', 'rid', 'userName'],
+      });
+      return userInfo;
+  },
     async addUser(data) {
         const ret = await User.create({
             account: data.account,

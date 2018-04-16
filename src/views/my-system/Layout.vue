@@ -6,7 +6,8 @@
       FormItem(prop="id",label="系统ID：")
         Input(type="text",v-model="systemData.id",placeholder="系统ID")
       FormItem(prop="ownerRid",label="系统创建人：")
-        Input(type="text",v-model="systemData.ownerRid",placeholder="系统创建人")
+        Select(v-model="systemData.ownerRid",placeholder="系统创建人",filterable,remote,clearable,:remote-method="getUserList")
+          Option(v-for="(user,index) in userList",:key="index",:value="user.rid",:label="user.userName")
       FormItem
         Button(type="default",@click="resetSystemData") 重置
         Button(type="primary",@click="systemData.current === 1 ? searchSystem() : systemData.current = 1") 查询
@@ -20,13 +21,23 @@
           Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
         FormItem(prop="remarks",label="系统备注：")
           Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
+    Modal(v-model="editeSystemShow",title="新建系统",@on-ok="updateSystem")
+      Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
+        FormItem(prop="name",label="系统名称：")
+          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
+        FormItem(prop="remarks",label="系统备注：")
+          Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
 
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
+import { Select, Option } from 'element-ui';
 
 export default {
+  components: {
+    Select, Option
+  },
   data(){
     const validateId = (rule,value,callback) => {
       if(value && !/^\d+$/.test(value)) callback(new Error('id必须是数字'))
@@ -40,6 +51,7 @@ export default {
     }
     return {
       createSystemShow:false,
+      editeSystemShow:false,
       newSystem:{
         name:'',
         remarks:'',
@@ -93,8 +105,50 @@ export default {
           key:'createdAt',
         },
         {
-          title:'修改时间',
-          key:'updatedAt',
+          title:'操作',
+          key:'canEdite',
+          width:130,
+            render: (h, params) => {
+              const eidtBtn = h('Button', {
+                      props: {
+                          type: 'primary',
+                          size: 'small'
+                      },
+                      on:{
+                        click(){
+                          this.newSystem = params.row;
+                          this.editeSystemShow = true;
+                        },
+                      }
+                  }, '编辑');
+              const delBtn = h('Button', {
+                      props: {
+                          type: 'primary',
+                          size: 'small'
+                      },
+                       on:{
+                        click(){
+                          console.log('click',params.row)
+                        },
+                      }
+                  }, '删除');
+              const applyBtn = h('Button', {
+                      props: {
+                          type: 'primary',
+                          size: 'small'
+                      },
+                       on:{
+                        click(){
+                          console.log('click',params.row)
+                        },
+                      }
+                  }, '申请');
+              if(params.row.canEdite){
+                return h('div', [eidtBtn,delBtn]);
+              } else {
+                return h('div', [applyBtn]);
+              }
+            }
         }
       ],
       systemList:{
@@ -118,17 +172,52 @@ export default {
         }
       }
     },
+    editeSystemShow(val){
+      if(val) {
+        this.newSystem = {
+          name:'',
+          remarks:'',
+        }
+      }
+    },
   },
   computed: {
     ...mapGetters([
-      'userInfo'
+      'userInfo',
+      'userList'
     ]),
   },
   mounted () {
-    if(this.userInfo.rid) this.systemData.ownerRid = this.userInfo.rid;
-    this.searchSystem();
+    if(this.userInfo.rid) {
+      this.systemData.ownerRid = this.userInfo.rid;
+    }
+      this.searchSystem();
   },
   methods:{
+    ...mapActions([
+      'getUserList'
+    ]),
+    async updateSystem(){
+       let ok = true;
+        this.$refs['newSystem'].validate((valid) => {
+            if (!valid) {
+                this.$Message.error('查询参数不正确');
+                ok = false;
+            }
+        })
+      if(ok){
+        const ret = await this.$axios.post('/system/update',{
+          ...this.newSystem,
+          ownerRid:this.userInfo.rid,
+          operatorRids:`${this.userInfo.rid}`,
+        });
+        if(ret.ok){
+          this.searchSystem();
+        } else {
+          this.$Message.error(ret.msg);
+        }
+      }
+    },
     async createNewSystem(){
         let ok = true;
         this.$refs['newSystem'].validate((valid) => {
@@ -187,6 +276,7 @@ export default {
         let list = ret.data.list;
         list = list.map((e) => {
           e.ownerName = e.ownerInfo.userName;
+          e.canEdite = e.ownerRid === this.userInfo.rid;
           e.operatorNames = e.operatorInfos.reduce((p,c) => {
             return `${p},${c.userName}`
           },'');
@@ -213,6 +303,15 @@ export default {
   form{
     button{
       margin:0 5px;
+    }
+  }
+  .el-select .el-input__inner{
+    line-height: 32px;
+    height: 32px;
+  }
+  .ivu-table-cell{
+    button{
+      margin: 0 3px;
     }
   }
   .ivu-table-wrapper{

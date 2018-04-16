@@ -16,10 +16,8 @@ const router = new VueRouter({
     routes,
 });
 router.beforeEach((to, form, next) => {
-    console.log(21, to.path);
     if (!/^\/mine/.test(to.path)) {
         const token = store.state.auth.token;
-        console.log(!token);
         if (!token) next('/mine/login');
         else next();
     } else if (to.name === 'Logout') {

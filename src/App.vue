@@ -13,7 +13,6 @@ export default {
     NavBar
   },
   mounted () {
-    console.log(this.$store.state)
   }
 }
 </script>

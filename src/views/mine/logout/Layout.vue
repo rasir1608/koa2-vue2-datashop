@@ -24,6 +24,7 @@ export default {
     }
   },
   mounted(){
+    this.$store.commit('LOGOUT');
     const timer = setInterval(() => {
       this.percent += 2;
       if(this.percent === 100) {
@@ -34,7 +35,6 @@ export default {
   },
   methods: {
     logout(){
-      this.$store.commit('LOGOUT');
       this.$router.push("/user/login");
     },
   }

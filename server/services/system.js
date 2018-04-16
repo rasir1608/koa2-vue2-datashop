@@ -81,6 +81,9 @@ const systemServer = {
       systemData.updatedAt = new Date();
       const data = Object.assign({}, systemData);
       delete data.id;
+      delete data.rid;
+      delete data.createdAt;
+      delete data.ownerRid;
       const ret = await system.update(
         data,
         { where: {

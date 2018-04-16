@@ -6,6 +6,7 @@ const interfaceDb = datashop.import(interfaceModel);
 const model = {
     name: '',
     url: '',
+    rid: '',
     method: '',
     contentType: '',
     creatorRid: '',
@@ -59,7 +60,8 @@ const interfaceServer = {
         Object.keys(model).forEach((key) => {
             if (data[key] || data[key] === 0) iData[key] = data[key];
         });
-        if (iData.name) iData.name = { $link: `%${iData.name}%` };
+        if (iData.name) iData.name = { $like: `%${iData.name}%` };
+        if (iData.rid) iData.rid = { $like: `%${iData.rid}%` };
         const ret = await interfaceDb.findAndCountAll({
             where: {
                 ...iData,

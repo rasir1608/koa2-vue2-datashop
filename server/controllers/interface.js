@@ -10,15 +10,15 @@ module.exports = {
        
         if (Array.isArray(ret.rows) && ret.rows.length > 0) {
             const pFn = await ret.rows.map(async (i) => {
-                const creator = i.getDataValue('creator');
-                const oprator = i.getDataValue('oprator');
-                const systemId = i.getDataValue('systemId');
-                const corInfo = await userServer.getUserById(creator);
-                const oprInfo = await userServer.getUserById(oprator);
-                const systemInfo = await systemServer.getOneSystem({ id: systemId });
+                const creator = i.getDataValue('creatorRid');
+                const oprator = i.getDataValue('opratorRid');
+                const systemRid = i.getDataValue('systemRid');
+                const corInfo = await userServer.getUserByRid(creator);
+                const oprInfo = await userServer.getUserByRid(oprator);
+                const systemInfo = await systemServer.getOneSystem({ rid: systemRid });
                 i.setDataValue('systemName', systemInfo.name);
-                i.setDataValue('creatorName', corInfo.user_name);
-                i.setDataValue('opratorName', oprInfo.user_name);
+                i.setDataValue('creatorName', corInfo.userName);
+                i.setDataValue('opratorName', oprInfo.userName);
                 return i;
             });
             const list = await Promise.all(pFn);
@@ -34,7 +34,7 @@ module.exports = {
             ctx.body = {
                 ok: false,
                 data: [],
-                msg: '获取接口分页信息失败！',
+                msg: '未获取到分页信息',
             };
         }
     },

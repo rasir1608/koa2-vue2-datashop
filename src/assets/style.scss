@@ -11,3 +11,8 @@ html,body{
 li,ol,ul{
     list-style: none;
 }
+
+.el-select .el-input__inner{
+  line-height: 32px;
+  height: 32px;
+}

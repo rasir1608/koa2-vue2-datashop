@@ -10,11 +10,37 @@ module.exports = {
     async getUserInfoById(ctx) {
         const id = ctx.params.id;
         const result = await userServer.getUserById(id);
-        ctx.body = {
+        if (result) {
+          ctx.body = {
             ok: true,
             data: result,
-        };
+            msg: '',
+          };
+        } else {
+          ctx.body = {
+            ok: true,
+            data: '',
+            msg: '获取信息失败',
+          };
+        }
     },
+    async getUserInfoByName(ctx) {
+      const userName = ctx.query.userName;
+      const result = await userServer.getUserByName(userName);
+      if (result) {
+        ctx.body = {
+          ok: true,
+          data: result,
+          msg: '',
+        };
+      } else {
+        ctx.body = {
+          ok: true,
+          data: '',
+          msg: '获取信息失败',
+        };
+      }
+  },
     async getUserInfoByRid(ctx) {
       const rid = ctx.params.rid;
       const result = await userServer.getOneUserInfo({ rid });
@@ -81,9 +107,8 @@ module.exports = {
             } else {
                 const userToken = {
                     account: userInfo.account,
-                    name: userInfo.user_name,
+                    userName: userInfo.userName,
                     id: userInfo.id,
-                    systems: userInfo.systems || '',
                     kind: userInfo.kind,
                     rid: userInfo.rid,
                     createdAt: userInfo.createdAt,

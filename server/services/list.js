@@ -41,7 +41,6 @@ module.exports = {
                 },
             },
         );
-        console.log(44, result);
         return result[0] === 1;
     },
 };
