@@ -116,20 +116,19 @@ export default {
         this.$refs['interfaceForm'].validate((valid) => {
             ok = valid;
         })
-        const request = this.requestEditor.getValue();
-        const response = this.responseEditor.getValue();
-        if((!request || utils.isJsonString(request)) && ( !response || utils.isJsonString(response)) && ok){
+        if(ok){
+            const request = this.requestEditor.getValue();
+            const response = this.responseEditor.getValue();
             this.interface.request = request;
             this.interface.response = response;
             this.interface.creator = this.userInfo.id;
             this.interface.oprator = this.userInfo.id;
-            if(this.$route.params.id >0 ) {
+            if(this.$route.params.id > 0 ) {
                 this.interface.id = this.$route.params.id;
                 this.updateInterface();
             } else {
                 this.createInterface();
             }
-            // ajax请求
         } else {
             this.$Message.error('参数填写有误，请仔细检查！');
         }
