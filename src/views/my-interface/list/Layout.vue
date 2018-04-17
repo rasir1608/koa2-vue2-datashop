@@ -7,7 +7,7 @@
         Input(type="text",v-model="interfaceData.rid",placeholder="接口RID")
       FormItem(prop="system",label="所属项目：")
         Select(v-model="interfaceData.systemRid",placeholder="所属项目",filterable,clearable)
-          Option(v-for="(user,index) in systemList",:key="index",:value="user.rid",:label="user.name")
+          Option(v-for="(user,index) in mySystemList",:key="index",:value="user.rid",:label="user.name")
       FormItem(prop="creator",label="接口创建人：")
         Select(v-model="interfaceData.creatorRid",placeholder="接口创建人",filterable,remote,clearable,:remote-method="getUserList")
           Option(v-for="(user,index) in userList",:key="index",:value="user.rid",:label="user.userName")
@@ -21,7 +21,7 @@
       FormItem
         Button(type="default",@click="resetInterfaceData") 重置
         Button(type="primary",@click="interfaceData.current === 1 ? searchInterface() : interfaceData.current = 1") 查询
-    Button(type="primary",@click="$router.push('/my-interface/edite/-1')") 添加接口
+    Button(type="primary",@click="$router.push('/interface/edite/-1')") 添加接口
     Table(:columns="interfaceColumns",:data="interfaceList.list") 
     Page(v-if="interfaceList.total",:total="interfaceList.total",show-sizer,show-total,:current.sync="interfaceData.current",
     :page-size="interfaceData.size",@on-page-size-change="sizeChange")
@@ -36,6 +36,7 @@ export default {
     Select, Option
   },
   data(){
+      const $vm = this;
       return{
           contentTypeOptions:['application/x-www-form-urlencoded','multipart/form-data','application/json','text/xml'],
           interfaceRules:{
@@ -55,7 +56,19 @@ export default {
           interfaceColumns:[
               {
                   title:'接口RID',
-                  key:'rid'
+                  key:'rid',
+                  render:(h,params) => {
+                      return h('a',{
+                          props:{
+                              href:'javascript:void(0);'
+                          },
+                          on:{
+                              click:() => {
+                                  this.$router.push(`/interface/edite/${params.row.id}`);
+                              },
+                          }
+                      },params.row.rid)
+                  }
               },{
                   title:'接口名称',
                   key:'name',
@@ -66,7 +79,7 @@ export default {
                           },
                           on:{
                               click:() => {
-                                  this.$router.push(`/my-interface/edite/${params.row.id}`);
+                                  this.$router.push(`/interface/edite/${params.row.id}`);
                               },
                           }
                       },params.row.name)
@@ -93,8 +106,22 @@ export default {
                   title:'所属系统',
                   key:'systemName'
               },{
-                  title:'创建时间',
-                  key:'createdAt'
+                  title:'操作',
+                  key:'canEdite',
+                  render:(h,params) => {
+                    const delBtn = h('Button', {
+                        props: {
+                            type: 'primary',
+                            size: 'small'
+                        },
+                          on:{
+                          click(){
+                            $vm.deleteInterface(params.row);
+                          },
+                        }
+                    }, '删除');
+                      return params.row.canEdite ? h('div',[delBtn]) :'';
+                  }
               }
           ],
           interfaceList:{
@@ -107,7 +134,7 @@ export default {
     ...mapGetters([
       'userInfo',
       'userList',
-      'systemList',
+      'mySystemList',
     ]),
   },
   watch:{
@@ -121,14 +148,12 @@ export default {
   created(){
     if(this.userInfo.rid) {
       this.interfaceData.creatorRid = this.userInfo.rid;
-      this.getSystemList(this.userInfo.rid);
     }
       this.searchInterface();
   },
   methods:{
       ...mapActions([
         'getUserList',
-        'getSystemList'
       ]),
       resetInterfaceData(){
         this.interfaceData = {
@@ -142,6 +167,24 @@ export default {
                 size:10,
                 current:1,
           }
+      },
+      deleteInterface(row){
+         this.$Modal.confirm({
+          title: '确认删除',
+          content: `<p>确认删除接口 <span style="color:red">${row.name}</span> 吗？该操作不可逆！。</p>`,
+          onOk: async () => {
+            const ret = await this.$axios.get('/interface/deleteByRid',{params:{rid:row.rid}})
+            if(ret.ok) {
+              this.$Message.success(ret.msg)
+              this.searchInterface();
+            } else {
+              this.$Message.error(ret.msg)
+            }
+          },
+          onCancel: () => {
+              this.$Message.info('取消删除');
+          }
+      });
       },
       async searchInterface(){
         const trans = {
@@ -161,7 +204,10 @@ export default {
         const ret = await this.$axios.post('/interface/page',params);
         if(ret.ok){
             this.interfaceList = {
-                list:ret.data.list,
+                list:ret.data.list.map(i => {
+                  i.canEdite = Boolean(this.mySystemList.find(s => s.rid === i.systemRid));
+                  return i;
+                }),
                 total:ret.data.total
             }
         } else {

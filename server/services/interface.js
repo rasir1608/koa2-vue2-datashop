@@ -71,6 +71,22 @@ const interfaceServer = {
         });
         return ret;
     },
+    async deleteBySystemRid(systemRid) {
+      const ret = await interfaceDb.destroy({
+        where: {
+          systemRid,
+        },
+      });
+      return ret > 0;
+    },
+    async deleteByRid(rid) {
+      const ret = await interfaceDb.destroy({
+        where: {
+          rid,
+        },
+      });
+      return ret === 1;
+    },
 };
 
 module.exports = interfaceServer;

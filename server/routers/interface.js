@@ -6,5 +6,5 @@ interfaceRouter.post('/interface/page', interfaceController.page);
 interfaceRouter.post('/interface/insert', interfaceController.insert);
 interfaceRouter.post('/interface/update', interfaceController.update);
 interfaceRouter.get('/interface/findById', interfaceController.findById);
-
+interfaceRouter.get('/interface/deleteByRid', interfaceController.deleteByRid);
 module.exports = interfaceRouter;

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `system` (
   `ownerRid` varchar(8) NOT NULL comment "系统管理员ID",
   `name` varchar(255) NOT NULL comment "系统名称",
   `operatorRids` varchar(255) comment "系统操作人员,有操作权限的人",
+  `applicantRids` varchar(255) comment "申请系统操作权限的人",
   `remarks` varchar(255) comment "系统备注",
   `createdAt` timestamp comment "创建时间",
   `updatedAt` timestamp comment "修改时间",

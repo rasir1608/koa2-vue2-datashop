@@ -13,6 +13,8 @@
         Button(type='dashed',@click='$router.push("/mine/register")') 去注册
 </template>
 <script>
+import { mapActions } from 'vuex';
+
 export default {
   data(){
     return{
@@ -23,12 +25,16 @@ export default {
     }
   },
   methods:{
+    ...mapActions([
+      'getMySystemList'
+    ]),
     async submit(){
       if(this.userInfo.account && this.userInfo.password){
         const ret = await this.$axios.post('/user/login',this.userInfo);
         if(ret.ok){
           this.$store.commit('SET_TOKEN',ret.data.token);
           this.$store.commit('USER_INFO',ret.data.userInfo);
+          this.getMySystemList(ret.data.userInfo.rid);
           this.$router.push('/');
           this.$Message.success(`恭喜登录成功！`);
         } else {

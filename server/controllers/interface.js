@@ -87,18 +87,19 @@ module.exports = {
     async update(ctx) {
         const data = ctx.request.body;
         const ret = interfaceServer.updateInterface(data);
-        if (ret) {
-            ctx.body = {
-                ok: true,
-                data: ret,
-                msg: '接口数据更新成功',
-            };
-        } else {
-            ctx.body = {
-                ok: false,
-                data: '',
-                msg: '接口数据更新失败',
-            };
-        }
+        ctx.body = {
+            ok: ret,
+            data: '',
+            msg: ret ? '接口数据更新成功！' : '接口数据更新失败！',
+        };
+    },
+    async deleteByRid(ctx) {
+      const rid = ctx.query.rid;
+      const ret = await interfaceServer.deleteByRid(rid);
+      ctx.body = {
+          ok: ret,
+          data: '',
+          msg: ret ? '接口删除成功！' : '接口删除失败！',
+      };
     },
 };

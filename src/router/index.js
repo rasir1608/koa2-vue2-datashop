@@ -5,7 +5,7 @@ import store from '../store';
 const files = require.context('./module', false, /\.js$/);
 let routes = [{
     path: '/',
-    redirect: '/my-system',
+    redirect: '/system',
 }];
 files.keys().forEach((key) => {
     routes = routes.concat(files(key).default || []);

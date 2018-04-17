@@ -1,5 +1,6 @@
 const systemServer = require('../services/system.js');
 const userServer = require('../services/user.js');
+const interfaceServer = require('../services/interface.js');
 const tool = require('../utils');
 
 module.exports = {
@@ -65,6 +66,32 @@ module.exports = {
         msg: ret ? '项目更新成功' : '项目更新失败',
       };
     },
+    async deleteByRid(ctx) {
+      const rid = ctx.query.rid;
+      const ret = await systemServer.deleteByRid(rid);
+      if (ret) {
+        const res = await interfaceServer.deleteBySystemRid(rid);
+        if (res) {
+          ctx.body = {
+            ok: true,
+            data: '',
+            msg: '项目和项目下接口均删除成功！',
+          };
+        } else {
+          ctx.body = {
+            ok: false,
+            data: '',
+            msg: '项目删除成功，但接口删除异常！',
+          };
+        }
+      } else {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: '项目删除失败！',
+        };
+      }
+    },
     async getAll(ctx) {
       const ret = await systemServer.getAllSystem();
       if (ret) {
@@ -98,6 +125,32 @@ module.exports = {
           ok: false,
           data: '',
           msg: '可用项目查询失败',
+        };
+      }
+    },
+    async findById(ctx) {
+      const id = ctx.query.id;
+      const ret = await systemServer.getOneSystem({ id });
+      if (ret) {
+        const operators = ret.getDataValue('operatorRids').split(',');
+        const operatorInfos = await userServer.butchGetUserByRids(operators);
+        ret.setDataValue('operatorInfos', operatorInfos);
+        let applicanters = ret.getDataValue('applicantRids');
+        if (applicanters) {
+          applicanters = applicanters.split(',');
+          const applicantInfos = await userServer.butchGetUserByRids(applicanters);
+          ret.setDataValue('applicantInfos', applicantInfos);
+        }
+        ctx.body = {
+          ok: true,
+          data: ret,
+          msg: '项目详情查询成功',
+        };
+      } else {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: '项目详情查询失败',
         };
       }
     },

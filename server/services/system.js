@@ -81,15 +81,21 @@ const systemServer = {
       systemData.updatedAt = new Date();
       const data = Object.assign({}, systemData);
       delete data.id;
-      delete data.rid;
       delete data.createdAt;
-      delete data.ownerRid;
       const ret = await system.update(
         data,
         { where: {
           id,
         } });
       return ret[0] === 1;
+    },
+    async deleteByRid(rid) {
+      const ret = await system.destroy({
+        where: {
+          rid,
+        },
+      });
+      return ret === 1;
     },
 };
 

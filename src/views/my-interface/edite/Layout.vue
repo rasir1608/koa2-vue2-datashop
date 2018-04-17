@@ -81,7 +81,7 @@ export default {
   computed:{
       ...mapGetters([
         'userInfo',
-        'systemList',
+        'mySystemList',
       ]),
       isEdite(){
         return /^\d+$/.test(this.$route.params.id);
@@ -92,8 +92,8 @@ export default {
     if(id > 0) {
       const ret = await axios.get('/interface/findById',{params:{id}})
         if(ret.ok){
-          const systemList = store.state.system.systemList;
-          if(systemList.find(s => s.rid === ret.systemRid)){
+          const mySystemList = store.state.system.mySystemList;
+          if(mySystemList.find(s => s.rid === ret.systemRid)){
             next(($vm) => {
               $vm.interface = ret.data;
               if($vm.requestEditor) $vm.requestEditor.setValue($vm.interface.request); 
@@ -132,8 +132,8 @@ export default {
         }
     },
     getUseableSystem(){
-      if(this.systemList.length){
-        this.systemOptions = this.systemList.map(e => ({rid:e.rid,name:e.name}))
+      if(this.mySystemList.length){
+        this.systemOptions = this.mySystemList.map(e => ({rid:e.rid,name:e.name}))
       } else {
         this.$Modal.info({
             title: '提示',
@@ -238,7 +238,6 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        flex-direction: column;
         a{
           width: 40px;
           height: 40px;

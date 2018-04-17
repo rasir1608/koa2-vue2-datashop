@@ -11,22 +11,22 @@
       FormItem
         Button(type="default",@click="resetSystemData") 重置
         Button(type="primary",@click="systemData.current === 1 ? searchSystem() : systemData.current = 1") 查询
-    Button(type="primary",@click="createSystemShow = true") 新建项目
+    Button(type="primary",@click="$router.push(`/system/edite/${-1}`)") 新建项目
     Table(:columns="columns",:data="systemList.list") 
     Page(v-if="systemList.total",:total="systemList.total",show-sizer,show-total,:current.sync="systemData.current",
     :page-size="systemData.size",@on-page-size-change="sizeChange")
-    Modal(v-model="createSystemShow",title="新建系统",@on-ok="createNewSystem")
-      Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
-        FormItem(prop="name",label="系统名称：")
-          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
-        FormItem(prop="remarks",label="系统备注：")
-          Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
-    Modal(v-model="editeSystemShow",title="新建系统",@on-ok="updateSystem")
-      Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
-        FormItem(prop="name",label="系统名称：")
-          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
-        FormItem(prop="remarks",label="系统备注：")
-          Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
+    //- Modal(v-model="createSystemShow",title="新建系统",@on-ok="createNewSystem")
+    //-   Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
+    //-     FormItem(prop="name",label="系统名称：")
+    //-       Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
+    //-     FormItem(prop="remarks",label="系统备注：")
+    //-       Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
+    //- Modal(v-model="editeSystemShow",title="新建系统",@on-ok="updateSystem")
+    //-   Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
+    //-     FormItem(prop="name",label="系统名称：")
+    //-       Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
+    //-     FormItem(prop="remarks",label="系统备注：")
+    //-       Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
 
 </template>
 
@@ -43,19 +43,20 @@ export default {
       if(value && !/^\d+$/.test(value)) callback(new Error('id必须是数字'))
       else callback()
     }
-    const validateNewSystemName = async (rule,value,callback) => {
-      if(!value) callback(new Error('请填写系统名称2'));
-      else {
-        // 发送ajax请求验证系统名称是否重名
-      }
-    }
+    // const validateNewSystemName = async (rule,value,callback) => {
+    //   if(!value) callback(new Error('请填写系统名称'));
+    //   else {
+    //     // 发送ajax请求验证系统名称是否重名
+    //   }
+    // }
+    const $vm = this;
     return {
-      createSystemShow:false,
-      editeSystemShow:false,
-      newSystem:{
-        name:'',
-        remarks:'',
-      },
+      // createSystemShow:false,
+      // editeSystemShow:false,
+      // newSystem:{
+      //   name:'',
+      //   remarks:'',
+      // },
       systemData:{
         name:'',
         id:'',
@@ -63,11 +64,11 @@ export default {
         current:1,
         size:10,
       },
-      createRules:{
-        name:[
-           { required: true, trigger: 'blur' ,validator: validateNewSystemName}
-        ],
-      },
+      // createRules:{
+      //   name:[
+      //      { required: true, trigger: 'blur' ,validator: validateNewSystemName}
+      //   ],
+      // },
       systemRules:{
         id:[
           { validator: validateId,trigger: 'blur' }
@@ -81,8 +82,8 @@ export default {
           align: 'center'
         },
         {
-          title:'ID',
-          key:'id',
+          title:'RID',
+          key:'rid',
         },
         {
           title:'系统名称',
@@ -116,8 +117,7 @@ export default {
                       },
                       on:{
                         click(){
-                          this.newSystem = params.row;
-                          this.editeSystemShow = true;
+                          $vm.$router.push(`/system/edite/${params.row.id}`);
                         },
                       }
                   }, '编辑');
@@ -128,7 +128,7 @@ export default {
                       },
                        on:{
                         click(){
-                          console.log('click',params.row)
+                          $vm.delSystem(params.row);
                         },
                       }
                   }, '删除');
@@ -164,22 +164,22 @@ export default {
       },
       deep:true
     },
-    createSystemShow(val){
-      if(val) {
-        this.newSystem = {
-          name:'',
-          remarks:'',
-        }
-      }
-    },
-    editeSystemShow(val){
-      if(val) {
-        this.newSystem = {
-          name:'',
-          remarks:'',
-        }
-      }
-    },
+    // createSystemShow(val){
+    //   if(!val) {
+    //     this.newSystem = {
+    //       name:'',
+    //       remarks:'',
+    //     }
+    //   }
+    // },
+    // editeSystemShow(val){
+    //   if(!val) {
+    //     this.newSystem = {
+    //       name:'',
+    //       remarks:'',
+    //     }
+    //   }
+    // },
   },
   computed: {
     ...mapGetters([
@@ -195,50 +195,67 @@ export default {
   },
   methods:{
     ...mapActions([
-      'getUserList'
+      'getUserList',
+      'getMySystemList'
     ]),
-    async updateSystem(){
-       let ok = true;
-        this.$refs['newSystem'].validate((valid) => {
-            if (!valid) {
-                this.$Message.error('查询参数不正确');
-                ok = false;
+    async delSystem(row){
+      this.$Modal.confirm({
+          title: '确认删除',
+          content: `<p>确认删除项目 <span style="color:red">${row.name}</span> 吗？该操作将同时删除该项目下的所有接口配置。</p>`,
+          onOk: async () => {
+            const ret = await this.$axios.get('/system/delete',{params:{rid:row.rid}});
+            if(ret.ok){
+              this.searchSystem();
+              this.getMySystemList(this.userInfo.rid);
+            } else {
+              this.$Message.error(ret.msg);
             }
-        })
-      if(ok){
-        const ret = await this.$axios.post('/system/update',{
-          ...this.newSystem,
-          ownerRid:this.userInfo.rid,
-          operatorRids:`${this.userInfo.rid}`,
-        });
-        if(ret.ok){
-          this.searchSystem();
-        } else {
-          this.$Message.error(ret.msg);
-        }
-      }
+          },
+          onCancel: () => {
+              this.$Message.info('取消删除');
+          }
+      });
     },
-    async createNewSystem(){
-        let ok = true;
-        this.$refs['newSystem'].validate((valid) => {
-            if (!valid) {
-                this.$Message.error('查询参数不正确');
-                ok = false;
-            }
-        })
-      if(ok){
-        const ret = await this.$axios.post('/system/insert',{
-          ...this.newSystem,
-          ownerRid:this.userInfo.rid,
-          operatorRids:`${this.userInfo.rid}`,
-        });
-        if(ret.ok){
-          this.searchSystem();
-        } else {
-          this.$Message.error(ret.msg);
-        }
-      }
-    },
+    // async updateSystem(){
+    //    let ok = true;
+    //     this.$refs['newSystem'].validate((valid) => {
+    //         if (!valid) {
+    //             this.$Message.error('查询参数不正确');
+    //             ok = false;
+    //         }
+    //     })
+    //   if(ok){
+    //     this.newSystem.operatorRids = `${this.userInfo.rid}`
+    //     const ret = await this.$axios.post('/system/update',this.newSystem);
+    //     if(ret.ok){
+    //       this.searchSystem();
+    //     } else {
+    //       this.$Message.error(ret.msg);
+    //     }
+    //   }
+    // },
+    // async createNewSystem(){
+    //     let ok = true;
+    //     this.$refs['newSystem'].validate((valid) => {
+    //         if (!valid) {
+    //             this.$Message.error('查询参数不正确');
+    //             ok = false;
+    //         }
+    //     })
+    //   if(ok){
+    //     const ret = await this.$axios.post('/system/insert',{
+    //       ...this.newSystem,
+    //       ownerRid:this.userInfo.rid,
+    //       operatorRids:`${this.userInfo.rid}`,
+    //     });
+    //     if(ret.ok){
+    //       this.searchSystem();
+    //       this.getMySystemList(this.userInfo.rid);
+    //     } else {
+    //       this.$Message.error(ret.msg);
+    //     }
+    //   }
+    // },
     resetSystemData(){
       this.systemData = Object.assign(this.systemData,{
         name:'',

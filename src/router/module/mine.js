@@ -27,6 +27,12 @@ export default [
                 component: () => import('@/views/mine/register/Layout'),
                 meta: { title: '账号注册' },
             },
+            {
+              path: '/mine/center',
+              name: 'Center',
+              component: () => import('@/views/mine/center/Layout'),
+              meta: { title: '个人中心' },
+          },
         ],
     },
     

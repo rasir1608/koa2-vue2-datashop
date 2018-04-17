@@ -2,15 +2,13 @@
   Layout.nav-bar
     Content
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        MenuItem(name='/my-system')
-          | 我的项目
-        MenuItem(name='/my-interface')
-          | 我的接口
-        MenuItem(name='/system-manager')
+        MenuItem(name='/system')
           | 项目管理
+        MenuItem(name='/interface')
+          | 接口管理
     Sider(hide-trigger)
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        li.ivu-menu-item(v-if="userInfo.userName")
+        MenuItem(v-if="userInfo.userName",name='/mine/center')
           | {{userInfo.userName}}
         MenuItem(v-else,name='/mine/login')
           | 登陆

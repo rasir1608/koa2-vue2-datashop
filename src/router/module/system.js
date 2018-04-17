@@ -1,29 +1,23 @@
 export default [
     {
-        path: '/my-system',
-        name: 'MySystem',
-        component: () => import('@/views/my-system/Layout'),
+        path: '/system',
+        redirect: '/system/list',
+        name: 'System',
+        component: () => import('@/views/system/Layout'),
         meta: { title: '我的项目' },
-    },
-    {
-        path: '/my-interface',
-        name: 'MyInterface',
-        redirect: '/my-interface/list',
-        component: () => import('@/views/my-interface/Layout'),
-        meta: { title: '接口管理' },
         children: [
-            {
-                path: '/my-interface/list',
-                name: 'InterFaceList',
-                component: () => import('@/views/my-interface/list/Layout'),
-                meta: { title: '接口列表' },
-            },
-            {
-                path: '/my-interface/edite/:id',
-                name: 'InterfaceCreate',
-                component: () => import('@/views/my-interface/edite/Layout'),
-                meta: { title: '创建接口' },
-            },
+          {
+            path: '/system/edite/:id',
+            name: 'SystemEdite',
+            component: () => import('@/views/system/edite/Layout'),
+            meta: { title: '接口列表' },
+          },
+          {
+            path: '/system/list',
+            name: 'SystemList',
+            component: () => import('@/views/system/list/Layout'),
+            meta: { title: '接口列表' },
+          },
         ],
     },
 ];
