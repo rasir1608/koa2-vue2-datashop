@@ -8,6 +8,7 @@ const systemDataModel = {
   rid: '',
   ownerRid: '',
   operatorRids: '',
+  applicantRids: '',
   name: '',
   remarks: '',
   createdAt: '',
@@ -31,7 +32,7 @@ const systemServer = {
       const ret = await system.findAll({
         where: {
           operatorRids: {
-            $like: operatorRid,
+            $like: `%${operatorRid}%`,
           },
         },
       });

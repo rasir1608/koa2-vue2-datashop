@@ -30,7 +30,7 @@ export default {
     ]),
     menuManager(){
       let path = this.$route.path;
-      if(/^\/my-interface/.test(path)) path = '/my-interface';
+      if(/^\/interface/.test(path)) path = '/interface';
       return path || '';
     },
   },

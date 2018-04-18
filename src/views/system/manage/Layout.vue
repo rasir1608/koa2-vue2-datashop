@@ -3,15 +3,14 @@
     .system-data
       Form(ref="systemData",:model="systemData",:rules="createRules",:label-width="100")
         FormItem(prop="name",label="系统名称：")
-          Input(type="text",v-model="systemData.name",placeholder="填入系统名称")
+          div {{systemData.name}}
         FormItem(prop="remarks",label="系统备注：")
           Input(type="textarea",v-model="systemData.remarks",placeholder="请填入系统备注")
-      //- Button(type="primary",size="small",@click="clear") 清除申请列表
-      Transfer(:data="userInfos",:target-keys="operators",:list-style="listStyle",filterable,:render-format="render",:operations="['删除','同意']",@on-change="handleChange",:titles="['申请人','操作人']")
+      Button.clear-applicants(type="primary",size="large",@click="clearApplicants") 清除申请列表
+      Transfer(:data="transferDatas",:target-keys="operators",:list-style="listStyle",filterable,:operations="['删除','同意']",@on-change="handleChange",:titles="['申请人','操作人']")
     .system-submit
         router-link(to="/system/list") 返回
         a(href="javascript:void(0);",@click="handleSubmit") 提交
-        a(href="javascript:void(0);",@click="handleReset('interfaceForm')") 重置
 </template>
 <script>
 import { mapGetters } from 'vuex';
@@ -37,32 +36,42 @@ export default {
         applicantInfos:[],
       },
       operators:[],
-      userInfos:[],
+      transferDatas:[],
       listStyle:{},
     }
   },
   computed: {
     ...mapGetters([
       'userInfo',
-      'userList'
     ]),
   },
   created () {
-    
+    const system = this.$route.params;
+    this.systemData = Object.assign(this.systemData,system);
+    this.transferDatas = this.getTransferData();
+    this.operators = this.getOperators();
   },
   methods: {
-    clear(){
+    clearApplicants(){
       this.systemData.applicantInfos = [];
-      this.userInfos = [...this.systemData.operatorInfos];
+      this.transferDatas = [...this.systemData.operatorInfos];
     },
-    handleSubmit(){},
-    handleReset(name){
-      console.log(name)
+    async handleSubmit(){
+      this.systemData.applicantRids = this.systemData.applicantInfos.reduce((p,c) => `${p},${c.rid}`,'').substr(1);
+      this.systemData.operatorRids = this.operators.join(',');
+      const system = Object.assign({},this.systemData);
+      delete system.operatorInfos;
+      delete system.applicantInfos;
+      const ret = await this.$axios.post('/system/update',system);
+      if(ret.ok){
+        this.$Message.success(ret.msg);
+      } else {
+        this.$Message.error(ret.msg);
+      }
     },
     getTransferData () {
       this.systemData.operatorInfos = this.changeUserInfo(this.systemData.operatorInfos);
       this.systemData.applicantInfos = this.changeUserInfo(this.systemData.applicantInfos || []);
-      console.log(this.systemData)
       return [...this.systemData.operatorInfos,...this.systemData.applicantInfos];
     },
     changeUserInfo(infoList){
@@ -72,8 +81,9 @@ export default {
             e = {
               key:e.rid,
               label:e.userName,
+              rid:e.rid,
             }
-            if(e.rid === this.systemData.onwerRid){
+            if(e.rid === this.systemData.ownerRid){
               e.disabled = true;
             } else {
               e.disabled = false;
@@ -84,50 +94,14 @@ export default {
       return list; 
     },
     handleChange (newTargetKeys) {
-      console.log(86,newTargetKeys)
       this.operators = newTargetKeys;
-      this.systemData.operatorInfos = this.userInfos.filter(u => this.operators.includes(u.key));
-      this.systemData.applicantInfos = this.userInfos.filter(u => !this.operators.includes(u.key));
+      this.systemData.operatorInfos = this.transferDatas.filter(u => this.operators.includes(u.key));
+      this.systemData.applicantInfos = this.transferDatas.filter(u => !this.operators.includes(u.key));
     },
     getOperators () {
        return this.systemData.operatorInfos.map(e => e.key);
     },
-    render (item) {
-        return item.label;
-    },
   },
-  async beforeRouteEnter(to, from, next){
-    const id = to.params.id;
-    if(id > 0){
-      const ret = await axios.get('/system/findById',{params:{id}});
-      if(ret.ok){
-        const systemData = ret.data;
-        next(($vm) => {
-          console.log(103,systemData)
-          $vm.systemData = Object.assign($vm.systemData,systemData);
-          console.log(104,$vm.systemData)
-          $vm.userInfos = $vm.getTransferData();
-          $vm.operators = $vm.getOperators();
-          console.log(107,$vm.userInfos)
-        });
-      } else {
-        Message.error(ret.msg);
-        next(false);
-      }
-    } else {
-      next(($vm) => {
-        // $vm.systemData={
-        //     name:'',
-        //     remarks:'',
-        //     operatorInfos:[$vm.userInfo],
-        //     onwerRid:$vm.userInfo.rid,
-        //     applicantInfos:[],
-        //   }
-        $vm.userInfos = $vm.getTransferData();
-        // $vm.operators = $vm.getOperators();
-      })
-    }
-  }
 }
 </script>
 
@@ -167,5 +141,21 @@ export default {
           }
         }
     }
+    .system-data {
+      background: #ffffff;
+      padding: 20px;
+      .ivu-transfer {
+        text-align: center;
+        
+      }
+    }
+    .clear-applicants{
+      margin: 20px 0 20px 10px;
+    }
 }
+</style>
+<style>
+  li.ivu-transfer-list-content-item{
+    text-align: left;
+  }
 </style>

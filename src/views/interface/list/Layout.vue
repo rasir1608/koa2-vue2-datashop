@@ -103,7 +103,7 @@ export default {
                   title:'修改者',
                   key:'opratorName'
               },{
-                  title:'所属系统',
+                  title:'所属项目',
                   key:'systemName'
               },{
                   title:'操作',

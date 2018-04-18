@@ -5,7 +5,7 @@ const util = require('util');
 const tool = require('../utils');
 
 const verify = util.promisify(jwt.verify); // 解密
-
+const salt = bcrypt.genSaltSync(10);
 module.exports = {
     async getUserInfoById(ctx) {
         const id = ctx.params.id;
@@ -68,7 +68,6 @@ module.exports = {
                 msg: '账号已存在',
             };
         } else {
-            const salt = bcrypt.genSaltSync(10);
             const hash = bcrypt.hashSync(userInfo.password, salt);
             const user = await userServer.addUser({
                 account: userInfo.account,
@@ -151,6 +150,38 @@ module.exports = {
           ok: false,
           data: '',
           msg: '请重新登录',
+        };
+      }
+    },
+    async updatePassword(ctx) {
+      const password = ctx.request.body;
+      const id = password.id;
+      const user = await userServer.getUserById(id);
+      if (user && bcrypt.compareSync(password.oldPassword, user.password)) {
+        const newPassword = password.newPassword;
+        const hash = bcrypt.hashSync(newPassword, salt);
+        const upUser = userServer.updateUserInfo({
+          id,
+          password: hash,
+        });
+        if (upUser) {
+          ctx.body = {
+            ok: true,
+            data: '',
+            msg: '密码修改成功',
+          };
+        } else {
+          ctx.body = {
+            ok: false,
+            data: '',
+            msg: '密码修改失败',
+          };
+        }
+      } else {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: '旧密码输入有误！',
         };
       }
     },

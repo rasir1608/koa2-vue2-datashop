@@ -25,7 +25,7 @@
             FormItem(label="响应数据：",prop="response")
                 textarea(ref="interface-response")
     .interface-submit
-        router-link(to="/my-interface/list") 返回
+        router-link(to="/interface/list") 返回
         a(href="javascript:void(0);",@click="handleSubmit") 提交
         a(href="javascript:void(0);",@click="handleReset('interfaceForm')") 重置
 </template>
@@ -93,7 +93,7 @@ export default {
       const ret = await axios.get('/interface/findById',{params:{id}})
         if(ret.ok){
           const mySystemList = store.state.system.mySystemList;
-          if(mySystemList.find(s => s.rid === ret.systemRid)){
+          if(mySystemList.find(s => s.rid === ret.data.systemRid)){
             next(($vm) => {
               $vm.interface = ret.data;
               if($vm.requestEditor) $vm.requestEditor.setValue($vm.interface.request); 
@@ -171,7 +171,7 @@ export default {
         const ret = await this.$axios.post('/interface/update',this.interface);
         if(ret.ok){
             this.$Message.success('接口更新成功！');
-            this.$router.push('/my-interface/list');
+            this.$router.push('/interface/list');
         } else {
             this.$Message.error(ret.msg || '接口更新失败！');
         }
@@ -180,7 +180,7 @@ export default {
         const ret = await this.$axios.post('/interface/insert',this.interface);
         if(ret.ok){
             this.$Message.success('接口创建成功！');
-            this.$router.push('/my-interface/list');
+            this.$router.push('/interface/list');
         } else {
             this.$Message.error(ret.msg || '接口创建失败！');
         }

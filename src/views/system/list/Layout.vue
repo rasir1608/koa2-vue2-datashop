@@ -11,23 +11,16 @@
       FormItem
         Button(type="default",@click="resetSystemData") 重置
         Button(type="primary",@click="systemData.current === 1 ? searchSystem() : systemData.current = 1") 查询
-    Button(type="primary",@click="$router.push(`/system/edite/${-1}`)") 新建项目
+    Button(type="primary",@click="createSystemShow = true") 新建项目
     Table(:columns="columns",:data="systemList.list") 
     Page(v-if="systemList.total",:total="systemList.total",show-sizer,show-total,:current.sync="systemData.current",
     :page-size="systemData.size",@on-page-size-change="sizeChange")
-    //- Modal(v-model="createSystemShow",title="新建系统",@on-ok="createNewSystem")
-    //-   Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
-    //-     FormItem(prop="name",label="系统名称：")
-    //-       Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
-    //-     FormItem(prop="remarks",label="系统备注：")
-    //-       Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
-    //- Modal(v-model="editeSystemShow",title="新建系统",@on-ok="updateSystem")
-    //-   Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
-    //-     FormItem(prop="name",label="系统名称：")
-    //-       Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
-    //-     FormItem(prop="remarks",label="系统备注：")
-    //-       Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
-
+    Modal(v-model="createSystemShow",title="新建系统",@on-ok="createNewSystem")
+      Form(ref="newSystem",:model="newSystem",:rules="createRules",:label-width="100")
+        FormItem(prop="name",label="系统名称：")
+          Input(type="text",v-model="newSystem.name",placeholder="填入系统名称")
+        FormItem(prop="remarks",label="系统备注：")
+          Input(type="textarea",v-model="newSystem.remarks",placeholder="请填入系统备注")
 </template>
 
 <script>
@@ -43,20 +36,16 @@ export default {
       if(value && !/^\d+$/.test(value)) callback(new Error('id必须是数字'))
       else callback()
     }
-    // const validateNewSystemName = async (rule,value,callback) => {
-    //   if(!value) callback(new Error('请填写系统名称'));
-    //   else {
-    //     // 发送ajax请求验证系统名称是否重名
-    //   }
-    // }
+    const validateNewSystemName = async (rule,value,callback) => {
+      if(!value) callback(new Error('请填写系统名称'));
+    }
     const $vm = this;
     return {
-      // createSystemShow:false,
-      // editeSystemShow:false,
-      // newSystem:{
-      //   name:'',
-      //   remarks:'',
-      // },
+      createSystemShow:false,
+      newSystem:{
+        name:'',
+        remarks:'',
+      },
       systemData:{
         name:'',
         id:'',
@@ -64,11 +53,11 @@ export default {
         current:1,
         size:10,
       },
-      // createRules:{
-      //   name:[
-      //      { required: true, trigger: 'blur' ,validator: validateNewSystemName}
-      //   ],
-      // },
+      createRules:{
+        name:[
+           { required: true, trigger: 'blur' ,validator: validateNewSystemName}
+        ],
+      },
       systemRules:{
         id:[
           { validator: validateId,trigger: 'blur' }
@@ -117,10 +106,10 @@ export default {
                       },
                       on:{
                         click(){
-                          $vm.$router.push(`/system/edite/${params.row.id}`);
+                          $vm.$router.push({name:'SystemManage',params:params.row});
                         },
                       }
-                  }, '编辑');
+                  }, '管理');
               const delBtn = h('Button', {
                       props: {
                           type: 'primary',
@@ -139,12 +128,19 @@ export default {
                       },
                        on:{
                         click(){
-                          console.log('click',params.row)
+                          $vm.applySystem(params.row);
                         },
                       }
                   }, '申请');
+              const canOperate =  h('Button', { 
+                      props: {
+                          type: 'primary',
+                          size: 'small'
+                      },}, '申请已通过');
               if(params.row.canEdite){
                 return h('div', [eidtBtn,delBtn]);
+              } else if(params.row.operatorInfos.find(o => o.rid === $vm.userInfo.rid)){
+                return h('div', [canOperate]);
               } else {
                 return h('div', [applyBtn]);
               }
@@ -164,27 +160,20 @@ export default {
       },
       deep:true
     },
-    // createSystemShow(val){
-    //   if(!val) {
-    //     this.newSystem = {
-    //       name:'',
-    //       remarks:'',
-    //     }
-    //   }
-    // },
-    // editeSystemShow(val){
-    //   if(!val) {
-    //     this.newSystem = {
-    //       name:'',
-    //       remarks:'',
-    //     }
-    //   }
-    // },
+    createSystemShow(val){
+      if(!val) {
+        this.newSystem = {
+          name:'',
+          remarks:'',
+        }
+      }
+    },
   },
   computed: {
     ...mapGetters([
       'userInfo',
-      'userList'
+      'userList',
+      'mySystemList'
     ]),
   },
   mounted () {
@@ -198,6 +187,32 @@ export default {
       'getUserList',
       'getMySystemList'
     ]),
+    async applySystem(row){
+      const applicantInfos = row.applicantInfos;
+      const applyRid = this.userInfo.rid;
+      let flag = false;
+      if(applicantInfos.length > 0){
+        if(applicantInfos.length === 20){
+          this.$Message.info('申请队列已满，请联系项目负责人进行审批后再进行申请');
+        } else if(applicantInfos.find(a => a.rid === applyRid)){
+          this.$Message.info('您已经在申请队列中，请联系项目负责人进行审批');
+        } else {
+          row.applicantRids += applyRid;
+          flag = true;
+        }
+      } else {
+        row.applicantRids = applyRid;
+        flag = true;
+      }
+      if(flag) {
+        const ret = await this.$axios.get('/system/apply',{params:{id:row.id,applicantRids:row.applicantRids}})
+        if(ret.ok){
+          this.$Message.success(ret.msg);
+        } else {
+          this.$Message.error(ret.msg);
+        }
+      }
+    },
     async delSystem(row){
       this.$Modal.confirm({
           title: '确认删除',
@@ -216,46 +231,28 @@ export default {
           }
       });
     },
-    // async updateSystem(){
-    //    let ok = true;
-    //     this.$refs['newSystem'].validate((valid) => {
-    //         if (!valid) {
-    //             this.$Message.error('查询参数不正确');
-    //             ok = false;
-    //         }
-    //     })
-    //   if(ok){
-    //     this.newSystem.operatorRids = `${this.userInfo.rid}`
-    //     const ret = await this.$axios.post('/system/update',this.newSystem);
-    //     if(ret.ok){
-    //       this.searchSystem();
-    //     } else {
-    //       this.$Message.error(ret.msg);
-    //     }
-    //   }
-    // },
-    // async createNewSystem(){
-    //     let ok = true;
-    //     this.$refs['newSystem'].validate((valid) => {
-    //         if (!valid) {
-    //             this.$Message.error('查询参数不正确');
-    //             ok = false;
-    //         }
-    //     })
-    //   if(ok){
-    //     const ret = await this.$axios.post('/system/insert',{
-    //       ...this.newSystem,
-    //       ownerRid:this.userInfo.rid,
-    //       operatorRids:`${this.userInfo.rid}`,
-    //     });
-    //     if(ret.ok){
-    //       this.searchSystem();
-    //       this.getMySystemList(this.userInfo.rid);
-    //     } else {
-    //       this.$Message.error(ret.msg);
-    //     }
-    //   }
-    // },
+    async createNewSystem(){
+        let ok = true;
+        this.$refs['newSystem'].validate((valid) => {
+            if (!valid) {
+                this.$Message.error('查询参数不正确');
+                ok = false;
+            }
+        })
+      if(ok){
+        const ret = await this.$axios.post('/system/insert',{
+          ...this.newSystem,
+          ownerRid:this.userInfo.rid,
+          operatorRids:`${this.userInfo.rid}`,
+        });
+        if(ret.ok){
+          this.searchSystem();
+          this.getMySystemList(this.userInfo.rid);
+        } else {
+          this.$Message.error(ret.msg);
+        }
+      }
+    },
     resetSystemData(){
       this.systemData = Object.assign(this.systemData,{
         name:'',

@@ -15,6 +15,14 @@ module.exports = {
           const operators = row.getDataValue('operatorRids').split(',');
           const operatorInfos = await userServer.butchGetUserByRids(operators);
           row.setDataValue('operatorInfos', operatorInfos);
+          let applicanters = row.getDataValue('applicantRids');
+          if (applicanters) {
+            applicanters = applicanters.split(',');
+            const applicantInfos = await userServer.butchGetUserByRids(applicanters);
+            row.setDataValue('applicantInfos', applicantInfos);
+          } else {
+            row.setDataValue('applicantInfos', []);
+          }
           return row;
         });
         list = await Promise.all(pFn);
@@ -110,9 +118,10 @@ module.exports = {
     },
     async getAllByOperator(ctx) {
       const operatorRid = ctx.query.userRid;
-      const ret = await systemServer.getAllByOperator(`%${operatorRid}%`);
+      const ret = await systemServer.getAllByOperator(operatorRid);
+      console.log(122, ret);
       if (ret) {
-        const regStr = `(,|\\b)${operatorRid}(,|\\b)`;
+        const regStr = `(,|^)${operatorRid}(,|$)`;
         const regExp = new RegExp(regStr);
         const systems = ret.filter(s => regExp.test(s.getDataValue('operatorRids')));
         ctx.body = {
@@ -140,6 +149,8 @@ module.exports = {
           applicanters = applicanters.split(',');
           const applicantInfos = await userServer.butchGetUserByRids(applicanters);
           ret.setDataValue('applicantInfos', applicantInfos);
+        } else {
+          ret.setDataValue('applicantInfos', []);
         }
         ctx.body = {
           ok: true,
@@ -153,5 +164,15 @@ module.exports = {
           msg: '项目详情查询失败',
         };
       }
+    },
+    async apply(ctx) {
+      const id = ctx.query.id;
+      const applicantRids = ctx.query.applicantRids;
+      const ret = await systemServer.updateSystem({ id, applicantRids });
+      ctx.body = {
+        ok: ret,
+        data: '',
+        msg: ret ? '已进入申请流程，请联系项目负责人审批' : '进入申请流程失败，请重试',
+      };
     },
 };
