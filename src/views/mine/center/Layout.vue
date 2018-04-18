@@ -16,7 +16,7 @@
           Button(type="primary",size="large",@click="changePassword = true") 修改密码
     .mine-args
     Modal(v-model="changePassword",@on-ok="submitPassword")
-      Form(ref="password",:model="password",inline,:label-width="100",:rules="passwordRules",)
+      Form(ref="passwordForm",:model="password",inline,:label-width="100",:rules="passwordRules",)
         FormItem(prop="oldPassword",label="旧密码：")
           Input(type="text",v-model="password.oldPassword",placeholder="请输入")
         FormItem(prop="newPassword",label="新密码：")
@@ -51,6 +51,11 @@ export default {
       }
     }
   },
+  watch:{
+    changePassword(va){
+      if(!va) this.$refs['passwordForm'].resetFields();
+    },
+  },
   computed: {
     ...mapGetters([
       'userInfo'
@@ -60,18 +65,23 @@ export default {
     this.editeUserInfo = Object.assign({},this.userInfo);
   },
   methods: {
-    async submitPassword(){
-      
-      if(this.password.newPassword === this.password.makesurPassword){
-        const ret = await this.$axios.post('/user/updatePassword',{id:this.userInfo.id,...this.password})
-        if(ret){
-          this.$Message.success(ret.msg);
-        } else {
-          this.$Message.error(ret.msg);
-        }
-      } else {
-        this.$Message.error('修改的密码两次输入不一致');
-      }
+    submitPassword(){
+      this.$refs['passwordForm'].validate(async (valid) => {
+          if (!valid) {
+              this.$Message.error('所有参数不能为空');
+          } else {
+            if(this.password.newPassword === this.password.makesurPassword){
+              const ret = await this.$axios.post('/user/updatePassword',{account:this.userInfo.account,...this.password})
+              if(ret){
+                this.$Message.success(ret.msg);
+              } else {
+                this.$Message.error(ret.msg);
+              }
+            } else {
+              this.$Message.error('修改的密码两次输入不一致');
+            }
+          }
+      })
     },
   }
 }

@@ -155,13 +155,13 @@ module.exports = {
     },
     async updatePassword(ctx) {
       const password = ctx.request.body;
-      const id = password.id;
-      const user = await userServer.getUserById(id);
+      const account = password.account;
+      const user = await userServer.getUserByAccount(account);
       if (user && bcrypt.compareSync(password.oldPassword, user.password)) {
         const newPassword = password.newPassword;
         const hash = bcrypt.hashSync(newPassword, salt);
         const upUser = userServer.updateUserInfo({
-          id,
+          id: user.id,
           password: hash,
         });
         if (upUser) {
