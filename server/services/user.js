@@ -8,6 +8,7 @@ const model = {
   password: '',
   type: '',
   rid: '',
+  headerUrl: '',
 };
 module.exports = {
     async getUserById(id) {
@@ -15,7 +16,7 @@ module.exports = {
             where: {
                 id,
             },
-            attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },
@@ -24,7 +25,7 @@ module.exports = {
             where: {
                 rid,
             },
-            attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },
@@ -35,7 +36,7 @@ module.exports = {
       });
       const userInfo = await User.findOne({
         where,
-        attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+        attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
     });
     return userInfo;
     },
@@ -64,7 +65,7 @@ module.exports = {
                 $in: idArr,
               },
           },
-          attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+          attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
       });
       return userInfos;
   },
@@ -75,7 +76,7 @@ module.exports = {
               $in: ridArr,
             },
         },
-        attributes: ['id', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
+        attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'type', 'createdAt', 'updatedAt'],
     });
     return userInfos;
 },
@@ -84,7 +85,7 @@ module.exports = {
             where: {
                 account,
             },
-            attributes: ['id', 'account', 'rid', 'userName', 'password', 'type', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'headerUrl', 'account', 'rid', 'userName', 'password', 'type', 'createdAt', 'updatedAt'],
         });
         return userInfo;
     },
@@ -95,7 +96,7 @@ module.exports = {
                 $like: `%${userName}%`,
               },
           },
-          attributes: ['id', 'account', 'rid', 'userName'],
+          attributes: ['id', 'headerUrl', 'account', 'rid', 'userName'],
       });
       return userInfo;
   },
@@ -110,8 +111,12 @@ module.exports = {
         return ret;
     },
     async updatePasswordById(userId, newPassword) {
+        const data = {
+          password: newPassword,
+          updatedAt: new Date(),
+        };
         const result = await User.update(
-            { password: newPassword },
+          data,
             {
                 where: {
                     id: userId,

@@ -15,9 +15,9 @@ export default [
         },
         {
             path: '/interface/edite/:id',
-            name: 'InterfaceCreate',
+            name: 'InterfaceEdite',
             component: () => import('@/views/interface/edite/Layout'),
-            meta: { title: '创建接口' },
+            meta: { title: '接口编辑' },
         },
     ],
   },

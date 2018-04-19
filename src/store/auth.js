@@ -36,13 +36,22 @@ const actions = {
     if (userName === '') {
       commit('SET_USER_LIST', []);
     } else {
-      const userList = await axios.get('/user/getUserInfoByName', { params: { userName } });
+      const userList = await axios.get('/userinfo/getUserInfoByName', { params: { userName } });
       if (userList.ok) {
         commit('SET_USER_LIST', userList.data);
       } else {
         commit('SET_USER_LIST', []);
         Message.error(userList.msg || '获取用户列表失败');
       }
+    }
+  },
+  async getMyUserInfo({ commit }) {
+    const ret = await axios.get('userinfo/userInfo');
+    if (ret.ok) {
+      commit('USER_INFO', ret.data);
+    } else {
+      commit('USER_INFO', []);
+      Message.error(ret.msg || '获取用户信息失败');
     }
   },
 };

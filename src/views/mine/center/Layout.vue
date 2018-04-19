@@ -1,21 +1,23 @@
 <template lang="pug">
   .mine-center
     .mine-header
-      img(src="static/image/header.jpg")
+      img(:src="userInfo.headerUrl ? `${userInfo.account}/${userInfo.headerUrl}` : headerImg")
       .mine-base-info
         div
           span.label 帐号： 
-          span.content {{editeUserInfo.account}}
+          span.content {{userInfo.account}}
         div
           span.label 用户名： 
-          Input.content(v-if="changeUserName",v-model="editeUserInfo.userName")
-          span.content(v-else) {{editeUserInfo.userName}}
-          Button(type="primary",size="small",@click="changeUserName = !changeUserName") {{changeUserName ? '保存' : '修改'}}
+          Input.content(v-if="userNameActive",v-model="userName")
+          span.content(v-else) {{userInfo.userName}}
+          Button(type="primary",size="small",@click="changeUserName") {{userNameActive ? '保存' : '修改'}}
         div.change-header
-          Button(type="primary",size="large",@click="changeUserName = !changeUserName") 修改头像
+          .upload-header
+            Button.upload-header-btn(type="primary",size="large") 修改头像
+            input(type="file",@change="uploadImage")
           Button(type="primary",size="large",@click="changePassword = true") 修改密码
     .mine-args
-    Modal(v-model="changePassword",@on-ok="submitPassword")
+    Modal.password-form(v-model="changePassword",@on-ok="submitPassword")
       Form(ref="passwordForm",:model="password",inline,:label-width="100",:rules="passwordRules",)
         FormItem(prop="oldPassword",label="旧密码：")
           Input(type="text",v-model="password.oldPassword",placeholder="请输入")
@@ -26,12 +28,13 @@
 
 </template>
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters,mapActions } from 'vuex';
 export default {
   data () {
     return {
+      headerImg:'static/image/header.jpg',
       changePassword:false,
-      changeUserName:false,
+      userNameActive:false,
       password:{
         oldPassword:'',
         newPassword:'',
@@ -48,7 +51,8 @@ export default {
         makesurPassword:[
            { required: true, trigger: 'blur'}
         ],
-      }
+      },
+      imageFile:'',
     }
   },
   watch:{
@@ -57,21 +61,42 @@ export default {
     },
   },
   computed: {
-    ...mapGetters([
-      'userInfo'
-    ]),
+    userInfo(){
+      return this.$store.state.auth.userInfo;
+    },
   },
   created () {
     this.editeUserInfo = Object.assign({},this.userInfo);
   },
   methods: {
+    ...mapActions([
+      'getMyUserInfo'
+    ]),
+    async uploadImage(event){
+      const e = event || window.event;
+      const target = e.target;
+      const file = target.files[0];
+      const formData = new FormData();
+      formData.append('file',file);
+      formData.append('user',this.userInfo.rid);
+      const config = {
+         headers: {'Content-Type': 'multipart/form-data'}
+      };
+      const ret = await this.$axios.post('/userinfo/uploadImg',formData,config);
+      if(ret.ok){
+        this.getMyUserInfo();
+        this.$Message.success(ret.msg);
+      } else {
+        this.$Message.error(ret.msg);
+      }
+    },
     submitPassword(){
       this.$refs['passwordForm'].validate(async (valid) => {
           if (!valid) {
               this.$Message.error('所有参数不能为空');
           } else {
             if(this.password.newPassword === this.password.makesurPassword){
-              const ret = await this.$axios.post('/user/updatePassword',{account:this.userInfo.account,...this.password})
+              const ret = await this.$axios.post('/userinfo/updatePassword',{account:this.userInfo.account,...this.password})
               if(ret){
                 this.$Message.success(ret.msg);
               } else {
@@ -82,6 +107,25 @@ export default {
             }
           }
       })
+    },
+    changeUserName(){
+      if(this.userNameActive){
+        if(this.userInfo.userName !== this.userName) this.submitUserName();
+        this.userNameActive = false;
+      } else {
+        this.userName = this.userInfo.userName;
+        this.userNameActive = true;
+      }
+    },
+    async submitUserName(){
+      if(!this.userName) return;
+      const ret =  await this.$axios.post('/userinfo/updateUserName',{id:this.userInfo.id,userName:this.userName});
+      if(ret.ok){
+        this.getMyUserInfo();
+        this.$Message.success(ret.msg);
+      } else {
+        this.$Message.error(ret.msg);
+      }
     },
   }
 }
@@ -129,9 +173,24 @@ export default {
             margin:0 10px;
           }
           &.change-header{
-            button{
-              &:first-of-type{
-                margin-left: 0;
+            .upload-header{
+              position: relative;
+              overflow: hidden;
+              width: 88px;
+              height: 36px;
+              border-radius: 4px;
+              button{
+                margin: 0;
+              }
+              input[type="file"]{
+                position: absolute;
+                width: 200%;
+                height: 200%;
+                right: 0;
+                bottom: 0;
+                z-index: 2;
+                opacity: 0;
+                cursor: pointer;
               }
             }
           }
@@ -141,7 +200,7 @@ export default {
   }
 </style>
 <style>
-    .ivu-form-inline .ivu-form-item{
+    .password-form .ivu-form-inline .ivu-form-item{
       width: 100%;
     }
 </style>

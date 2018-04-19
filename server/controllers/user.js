@@ -3,10 +3,54 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const util = require('util');
 const tool = require('../utils');
+const fs = require('fs');
+const path = require('path');
 
+const secret = 'data-shop-secret';
 const verify = util.promisify(jwt.verify); // 解密
 const salt = bcrypt.genSaltSync(10);
 module.exports = {
+    async getImageUpload(ctx) {
+      const token = ctx.header.authorization;
+      if (token) {
+        try {
+          const payload = await verify(token.split(' ')[1], secret);
+          const account = payload.data.account;
+          const userInfo = await userServer.getUserByAccount(account);
+          const uploadPath = path.join(__dirname, `../../public/${account}`);
+          const filePath = ctx.req.file.path;
+          const filename = `rasir_header_${ctx.req.file.filename}`;
+          if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+          if (userInfo.getDataValue('headerUrl')) fs.unlinkSync(`${uploadPath}/${userInfo.getDataValue('headerUrl')}`);
+          const file = fs.readFileSync(filePath);
+          fs.writeFileSync(`${uploadPath}/${filename}`, file);
+          fs.unlinkSync(filePath);
+          const ret = await userServer.updateUserInfo({
+            id: userInfo.getDataValue('id'),
+            headerUrl: filename,
+          });
+          if (ret) {
+            ctx.body = {
+              ok: true,
+              msg: '文件上传成功',
+              data: filename,
+            };
+          } else {
+            ctx.body = {
+              ok: false,
+              msg: '文件上传成功，文件路径保存失败！',
+              data: filename,
+            };
+          }
+        } catch (e) {
+          ctx.body = {
+            ok: false,
+            msg: '文件上传失败',
+            data: e.toString(),
+          };
+        }
+      }
+    },
     async getUserInfoById(ctx) {
         const id = ctx.params.id;
         const result = await userServer.getUserById(id);
@@ -112,6 +156,7 @@ module.exports = {
                     rid: userInfo.rid,
                     createdAt: userInfo.createdAt,
                     updatedAt: userInfo.updatedAt,
+                    headerUrl: userInfo.headerUrl,
                 };
                 const token = jwt.sign({
                     data: userToken,
@@ -137,7 +182,7 @@ module.exports = {
     async getUserInfo(ctx) {
       const token = ctx.header.authorization;
       if (token) {
-        const payload = await verify(token.split(' ')[1], 'data-shop-secret');
+        const payload = await verify(token.split(' ')[1], secret);
         const userId = payload.data.id;
         const userInfo = await userServer.getUserById(userId);
         ctx.body = {
@@ -182,6 +227,25 @@ module.exports = {
           ok: false,
           data: '',
           msg: '旧密码输入有误！',
+        };
+      }
+    },
+    async updateUserName(ctx) {
+      const user = ctx.request.body;
+      console.log(234, user);
+      const ret = await userServer.getOneUserInfo({ userName: user.userName });
+      if (ret) {
+        ctx.body = {
+          ok: false,
+          msg: '用户昵称以占用',
+          data: '',
+        };
+      } else {
+        const res = await userServer.updateUserInfo({ id: user.id, userName: user.userName });
+        ctx.body = {
+          ok: res,
+          data: '',
+          msg: res ? '用户昵称修改成功' : '用户昵称修改失败',
         };
       }
     },

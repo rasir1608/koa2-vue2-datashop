@@ -6,11 +6,18 @@
           div {{systemData.name}}
         FormItem(prop="remarks",label="系统备注：")
           Input(type="textarea",v-model="systemData.remarks",placeholder="请填入系统备注")
+        FormItem(prop="modelUrl",label="原型地址：")
+          a(:href="systemData.modelUrl") {{systemData.modelUrl || '暂无'}}
+        FormItem(prop="uiUrl",label="UI地址：")
+          a(:href="systemData.uiUrl") {{systemData.uiUrl || '暂无'}}
+        FormItem(prop="webUrl",label="前端web地址：")
+          a(:href="systemData.webUrl") {{systemData.webUrl || '暂无'}}
       Button.clear-applicants(type="primary",size="large",@click="clearApplicants") 清除申请列表
       Transfer(:data="transferDatas",:target-keys="operators",:list-style="listStyle",filterable,:operations="['删除','同意']",@on-change="handleChange",:titles="['申请人','操作人']")
     .system-submit
         router-link(to="/system/list") 返回
         a(href="javascript:void(0);",@click="handleSubmit") 提交
+        a(href="javascript:void(0);",@click="$router.push({name:'InterFaceList',params:{systemRid:systemData.rid}})") 查看接口
 </template>
 <script>
 import { mapGetters } from 'vuex';
@@ -34,6 +41,10 @@ export default {
         operatorInfos:[],
         onwerRid:'',
         applicantInfos:[],
+        rid:'',
+        modelUrl:'',
+        uiUrl:'',
+        webUrl:'',
       },
       operators:[],
       transferDatas:[],
@@ -47,14 +58,18 @@ export default {
   },
   created () {
     const system = this.$route.params;
-    this.systemData = Object.assign(this.systemData,system);
-    this.transferDatas = this.getTransferData();
-    this.operators = this.getOperators();
+    this.initData(system);
   },
   methods: {
+    initData(system){
+      this.systemData = Object.assign(this.systemData,system);
+      this.transferDatas = this.getTransferData();
+      this.operators = this.getOperators();
+    },
     clearApplicants(){
       this.systemData.applicantInfos = [];
       this.transferDatas = [...this.systemData.operatorInfos];
+      this.$Message.success('申请人已清理');
     },
     async handleSubmit(){
       this.systemData.applicantRids = this.systemData.applicantInfos.reduce((p,c) => `${p},${c.rid}`,'').substr(1);

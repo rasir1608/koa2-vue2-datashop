@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `rid` varchar(8) DEFAULT NULL comment '用户rid',
   `account` char(50) NOT NULL comment '用户账号',
   `userName` char(50) NOT NULL comment '用户姓名',
+  `headerUrl` varchar(255) NOT NULL comment '头像URL地址',
   `password` char(128) NOT NULL comment '密码',
   `type` int(11) DEFAULT 1 comment '用户权限 1普通用户，2系统管理员，3项目管理员',
   `createdAt` timestamp comment '创建时间',

@@ -8,7 +8,8 @@
           | 接口管理
     Sider(hide-trigger)
       Menu(mode='horizontal',theme="dark",:active-name="menuManager",@on-select="menuChange")
-        MenuItem(v-if="userInfo.userName",name='/mine/center')
+        MenuItem.header-img(v-if="userInfo.userName",name='/mine/center')
+          img(:src="userInfo.headerUrl ? `${userInfo.account}/${userInfo.headerUrl}` : headerImg")
           | {{userInfo.userName}}
         MenuItem(v-else,name='/mine/login')
           | 登陆
@@ -22,6 +23,7 @@ import { mapGetters } from 'vuex';
 export default {
   data(){
     return{
+       headerImg:'static/image/header.jpg',
     }
   },
   computed:{
@@ -36,7 +38,7 @@ export default {
   },
   async created(){
     if(!this.userInfo.userName){
-      const ret = await this.$axios.get('/user/userInfo')
+      const ret = await this.$axios.get('/userinfo/userInfo')
       if(ret.ok){
         this.$store.commit('USER_INFO',ret.data);
       } else {
@@ -59,6 +61,17 @@ export default {
     background: #495060;
     .ivu-menu-horizontal{
       height: 100%;
+    }
+    .header-img{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      img{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 10px;
+      }
     }
     .ivu-layout-sider{
       flex: initial!important;

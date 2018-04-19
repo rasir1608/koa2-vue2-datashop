@@ -119,7 +119,6 @@ module.exports = {
     async getAllByOperator(ctx) {
       const operatorRid = ctx.query.userRid;
       const ret = await systemServer.getAllByOperator(operatorRid);
-      console.log(122, ret);
       if (ret) {
         const regStr = `(,|^)${operatorRid}(,|$)`;
         const regExp = new RegExp(regStr);

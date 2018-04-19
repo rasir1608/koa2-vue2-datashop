@@ -11,6 +11,9 @@ const systemDataModel = {
   applicantRids: '',
   name: '',
   remarks: '',
+  modelUrl: '',
+  webUrl: '',
+  uiUrl: '',
   createdAt: '',
   updatedAt: '',
 };

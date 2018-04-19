@@ -146,10 +146,12 @@ export default {
     },
   },
   created(){
-    if(this.userInfo.rid) {
+    const systemRid = this.$route.params.systemRid;
+    if(systemRid) this.interfaceData.systemRid = systemRid;
+    else if(this.userInfo.rid) {
       this.interfaceData.creatorRid = this.userInfo.rid;
     }
-      this.searchInterface();
+    this.searchInterface();
   },
   methods:{
       ...mapActions([
