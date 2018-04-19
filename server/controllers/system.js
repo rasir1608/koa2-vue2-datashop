@@ -2,7 +2,10 @@ const systemServer = require('../services/system.js');
 const userServer = require('../services/user.js');
 const interfaceServer = require('../services/interface.js');
 const tool = require('../utils');
+const path = require('path');
+const fs = require('fs');
 
+const publicPath = path.join(__dirname, '../../public/');
 module.exports = {
     async page(ctx) {
       const data = ctx.request.body;
@@ -173,5 +176,44 @@ module.exports = {
         data: '',
         msg: ret ? '已进入申请流程，请联系项目负责人审批' : '进入申请流程失败，请重试',
       };
+    },
+    async uploadUrl(ctx) {
+      const type = ctx.req.body.type;
+      const account = ctx.req.body.account;
+      const id = ctx.req.body.id;
+      try {
+        const uploadPath = path.join(publicPath, account);
+        const filePath = ctx.req.file.path;
+        const filename = `${account}/${type}_${ctx.req.file.filename}`;
+        const systemInfo = await systemServer.getOneSystem({ id });
+        const typeUrl = systemInfo[type];
+        if (typeUrl) fs.unlinkSync(`${publicPath}/${typeUrl}`);
+        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+        const file = fs.readFileSync(filePath);
+        fs.writeFileSync(`${publicPath}/${filename}`, file);
+        fs.unlinkSync(filePath);
+        const data = { id };
+        data[type] = filename;
+        const ret = await systemServer.updateSystem(data);
+        if (ret) {
+          ctx.body = {
+            ok: true,
+            msg: '文件上传成功',
+            data: filename,
+          };
+        } else {
+          ctx.body = {
+            ok: false,
+            msg: '文件上传成功，文件路径保存失败！',
+            data: filename,
+          };
+        }
+      } catch (e) {
+        ctx.body = {
+          ok: false,
+          msg: '文件上传失败',
+          data: e.toString(),
+        };
+      }
     },
 };

@@ -6,12 +6,27 @@
           div {{systemData.name}}
         FormItem(prop="remarks",label="系统备注：")
           Input(type="textarea",v-model="systemData.remarks",placeholder="请填入系统备注")
-        FormItem(prop="modelUrl",label="原型地址：")
-          a(:href="systemData.modelUrl") {{systemData.modelUrl || '暂无'}}
-        FormItem(prop="uiUrl",label="UI地址：")
-          a(:href="systemData.uiUrl") {{systemData.uiUrl || '暂无'}}
-        FormItem(prop="webUrl",label="前端web地址：")
-          a(:href="systemData.webUrl") {{systemData.webUrl || '暂无'}}
+        FormItem.have-control(prop="modelUrl",label="原型地址：")
+          .control-content
+            a(:href="systemData.modelUrl",target="_blank",v-if="url.model") {{systemData.modelUrl || '暂无'}}
+            Input(v-else,v-model="systemData.modelUrl",type="text")
+          .control-btn
+            Button(type="primary",size="small",@click="inputModelUrl") {{ url.model ? '填写' : '保存' }}
+            upload(type="primary",size="small",@change="uploadModel") 上传
+        FormItem.have-control(prop="uiUrl",label="UI地址：")
+          .control-content
+            a(:href="systemData.uiUrl",target="_blank",v-if="url.ui") {{systemData.uiUrl || '暂无'}}
+            Input(v-else,v-model="systemData.uiUrl",type="text")
+          .control-btn
+            Button(type="primary",size="small",@click="url.ui = !url.ui") {{ url.ui ? '填写' : '保存' }}
+            upload(type="primary",size="small") 上传
+        FormItem.have-control(prop="webUrl",label="前端web地址：")
+          .control-content
+            a(:href="systemData.webUrl",target="_blank",v-if="url.web") {{systemData.webUrl || '暂无'}}
+            Input(v-else,v-model="systemData.webUrl",type="text")
+          .control-btn
+            Button(type="primary",size="small",@click="url.web = !url.web") {{ url.web ? '填写' : '保存' }}
+            upload(type="primary",size="small") 上传
       Button.clear-applicants(type="primary",size="large",@click="clearApplicants") 清除申请列表
       Transfer(:data="transferDatas",:target-keys="operators",:list-style="listStyle",filterable,:operations="['删除','同意']",@on-change="handleChange",:titles="['申请人','操作人']")
     .system-submit
@@ -23,8 +38,12 @@
 import { mapGetters } from 'vuex';
 import axios from '@/http';
 import { Message } from 'element-ui';
+import Upload from '@/views/components/Upload';
 
 export default {
+  components:{
+    Upload
+  },
   data () {
     const validateNewSystemName = async (rule,value,callback) => {
         if(!value) callback(new Error('请填写系统名称'));
@@ -34,6 +53,11 @@ export default {
         name:[
            { required: true, trigger: 'blur' ,validator: validateNewSystemName}
         ],
+      },
+      url:{
+        model:true,
+        web:true,
+        ui:true,
       },
       systemData:{
         name:'',
@@ -49,6 +73,7 @@ export default {
       operators:[],
       transferDatas:[],
       listStyle:{},
+      systemDataCopy:{},
     }
   },
   computed: {
@@ -61,8 +86,71 @@ export default {
     this.initData(system);
   },
   methods: {
+    async inputModelUrl(){
+      this.url.model = !this.url.model;
+      if(this.url.model){
+        const ret =  await this.$axios.get('system/update',{id:this.systemData.id,modelUrl:this.systemData.modelUrl});
+        if(ret.ok){
+          this.$Message.success(ret.msg);
+          this.systemDataCopy.modelUrl = this.systemData.modelUrl;
+        } else {
+          this.$Message.error(ret.msg);
+          this.systemData.modelUrl = this.systemDataCopy.modelUrl;
+        }
+      } 
+    },
+   
+    async uploadFile(file,type){
+      const data = new FormData();
+      data.append('file',file);
+      data.append('account',this.userInfo.account);
+      data.append('type',type);
+      data.append('id',this.systemData.id);
+      const config = {
+         headers: {'Content-Type': 'multipart/form-data'}
+      }
+      const ret = this.$axios.post('system/uploadUrl',data,config);
+      if(ret.ok){
+        this.$Message.success(ret.msg);
+        this.systemData[type] = ret.data;
+        this.systemDataCopy[type] = this.systemData[type];
+      } else {
+        this.$Message.error(ret.msg);
+      }
+    },
+    uploadModel(event){
+      this.url.model = true;
+      const e = event || window.event;
+      const file = e.target.files[0];
+       this.uploadFile(file,'modelUrl');
+    },
+    uploadUi(event){
+      this.url.model = true;
+      const e = event || window.event;
+      const file = e.target.files[0];
+      this.uploadFile(file,'uiUrl');
+    },
+    async uploadWeb(event){
+      this.url.model = true;
+      const e = event || window.event;
+      const file = e.target.files[0];
+      const data = new FormData();
+      data.append('file',file);
+      const config = {
+         headers: {'Content-Type': 'multipart/form-data'}
+      }
+      const ret = this.$axios.post('system/uploadWeb',data,config);
+      if(ret.ok){
+          this.$Message.success(ret.msg);
+          this.systemData.webUrl = ret.data;
+          this.systemDataCopy.webUrl = this.systemData.webUrl;
+        } else {
+          this.$Message.error(ret.msg);
+        }
+    },
     initData(system){
       this.systemData = Object.assign(this.systemData,system);
+      this.systemDataCopy = Object.assign({},this.systemData);
       this.transferDatas = this.getTransferData();
       this.operators = this.getOperators();
     },
@@ -172,5 +260,22 @@ export default {
 <style>
   li.ivu-transfer-list-content-item{
     text-align: left;
+  }
+  .have-control .ivu-form-item-content{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .have-control .ivu-form-item-content  .control-content{
+      flex:1;
+  }
+  .have-control .ivu-form-item-content  .control-btn{
+      padding: 0 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  .have-control .ivu-form-item-content  .control-btn > button{
+    margin: 0 10px;
   }
 </style>
