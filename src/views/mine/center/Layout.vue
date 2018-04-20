@@ -78,7 +78,6 @@ export default {
       const file = target.files[0];
       const formData = new FormData();
       formData.append('file',file);
-      formData.append('user',this.userInfo.rid);
       const config = {
          headers: {'Content-Type': 'multipart/form-data'}
       };

@@ -36,7 +36,7 @@ const actions = {
     if (userName === '') {
       commit('SET_USER_LIST', []);
     } else {
-      const userList = await axios.get('/userinfo/getUserInfoByName', { params: { userName } });
+      const userList = await axios.get('/userinfo/getUserListByName', { params: { userName } });
       if (userList.ok) {
         commit('SET_USER_LIST', userList.data);
       } else {

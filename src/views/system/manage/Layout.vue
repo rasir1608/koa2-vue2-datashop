@@ -11,23 +11,23 @@
             a(:href="systemData.modelUrl",target="_blank",v-if="url.model") {{systemData.modelUrl || '暂无'}}
             Input(v-else,v-model="systemData.modelUrl",type="text")
           .control-btn
-            Button(type="primary",size="small",@click="inputModelUrl") {{ url.model ? '填写' : '保存' }}
+            Button(type="primary",size="small",@click="inputModelUrl('model')") {{ url.model ? '填写' : '保存' }}
             upload(type="primary",size="small",@change="uploadModel") 上传
         FormItem.have-control(prop="uiUrl",label="UI地址：")
           .control-content
             a(:href="systemData.uiUrl",target="_blank",v-if="url.ui") {{systemData.uiUrl || '暂无'}}
             Input(v-else,v-model="systemData.uiUrl",type="text")
           .control-btn
-            Button(type="primary",size="small",@click="url.ui = !url.ui") {{ url.ui ? '填写' : '保存' }}
-            upload(type="primary",size="small") 上传
+            Button(type="primary",size="small",@click="inputModelUrl('ui')") {{ url.ui ? '填写' : '保存' }}
+            upload(type="primary",size="small",@change="uploadUi") 上传
         FormItem.have-control(prop="webUrl",label="前端web地址：")
           .control-content
             a(:href="systemData.webUrl",target="_blank",v-if="url.web") {{systemData.webUrl || '暂无'}}
             Input(v-else,v-model="systemData.webUrl",type="text")
           .control-btn
-            Button(type="primary",size="small",@click="url.web = !url.web") {{ url.web ? '填写' : '保存' }}
-            upload(type="primary",size="small") 上传
-      Button.clear-applicants(type="primary",size="large",@click="clearApplicants") 清除申请列表
+            Button(type="primary",size="small",@click="inputModelUrl('web')") {{ url.web ? '填写' : '保存' }}
+            upload(type="primary",size="small",@change="uploadWeb") 上传
+      Button.clear-applicants(type="primary",size="large",@click="clearApplicants") 清空申请列表
       Transfer(:data="transferDatas",:target-keys="operators",:list-style="listStyle",filterable,:operations="['删除','同意']",@on-change="handleChange",:titles="['申请人','操作人']")
     .system-submit
         router-link(to="/system/list") 返回
@@ -37,7 +37,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import axios from '@/http';
-import { Message } from 'element-ui';
+// import { Message } from 'element-ui';
 import Upload from '@/views/components/Upload';
 
 export default {
@@ -83,19 +83,22 @@ export default {
   },
   created () {
     const system = this.$route.params;
-    this.initData(system);
+    this.initData(system); 
   },
   methods: {
-    async inputModelUrl(){
-      this.url.model = !this.url.model;
-      if(this.url.model){
-        const ret =  await this.$axios.get('system/update',{id:this.systemData.id,modelUrl:this.systemData.modelUrl});
+    async inputModelUrl(type){
+      this.url[type] = !this.url[type];
+      if(this.url[type]){
+        const urlType = `${type}Url`;
+        const data = {id:this.systemData.id};
+        data[urlType] = this.systemData[urlType];
+        const ret =  await this.$axios.post('system/update',data);
         if(ret.ok){
           this.$Message.success(ret.msg);
-          this.systemDataCopy.modelUrl = this.systemData.modelUrl;
+          this.systemDataCopy[urlType] = this.systemData[urlType];
         } else {
           this.$Message.error(ret.msg);
-          this.systemData.modelUrl = this.systemDataCopy.modelUrl;
+          this.systemData[urlType] = this.systemDataCopy[urlType];
         }
       } 
     },
@@ -109,7 +112,7 @@ export default {
       const config = {
          headers: {'Content-Type': 'multipart/form-data'}
       }
-      const ret = this.$axios.post('system/uploadUrl',data,config);
+      const ret = await this.$axios.post('system/uploadUrl',data,config);
       if(ret.ok){
         this.$Message.success(ret.msg);
         this.systemData[type] = ret.data;
@@ -130,23 +133,11 @@ export default {
       const file = e.target.files[0];
       this.uploadFile(file,'uiUrl');
     },
-    async uploadWeb(event){
+    uploadWeb(event){
       this.url.model = true;
       const e = event || window.event;
       const file = e.target.files[0];
-      const data = new FormData();
-      data.append('file',file);
-      const config = {
-         headers: {'Content-Type': 'multipart/form-data'}
-      }
-      const ret = this.$axios.post('system/uploadWeb',data,config);
-      if(ret.ok){
-          this.$Message.success(ret.msg);
-          this.systemData.webUrl = ret.data;
-          this.systemDataCopy.webUrl = this.systemData.webUrl;
-        } else {
-          this.$Message.error(ret.msg);
-        }
+      this.uploadFile(file,'webUrl');
     },
     initData(system){
       this.systemData = Object.assign(this.systemData,system);
@@ -157,7 +148,7 @@ export default {
     clearApplicants(){
       this.systemData.applicantInfos = [];
       this.transferDatas = [...this.systemData.operatorInfos];
-      this.$Message.success('申请人已清理');
+      this.$Message.success('申请人已清空');
     },
     async handleSubmit(){
       this.systemData.applicantRids = this.systemData.applicantInfos.reduce((p,c) => `${p},${c.rid}`,'').substr(1);

@@ -89,7 +89,7 @@ module.exports = {
         });
         return userInfo;
     },
-    async getUserByName(userName) {
+    async getUserListByName(userName) {
       const userInfo = await User.findAll({
           where: {
               userName: {

@@ -70,12 +70,29 @@ module.exports = {
     },
     async update(ctx) {
       const data = ctx.request.body;
-      const ret = await systemServer.updateSystem(data);
-      ctx.body = {
-        ok: ret,
-        data: '',
-        msg: ret ? '项目更新成功' : '项目更新失败',
+      const special = {
+        webUrl: data.webUrl,
+        uiUrl: data.uiUrl,
+        modelUrl: data.modelUrl,
       };
+      try {
+        const system = await systemServer.getOneSystem({ id: data.id });
+        if (special.webUrl && fs.existsSync(`${publicPath}/${system.webUrl}`)) fs.unlinkSync(`${publicPath}/${system.webUrl}`);
+        if (special.uiUrl && fs.existsSync(`${publicPath}/${system.uiUrl}`)) fs.unlinkSync(`${publicPath}/${system.uiUrl}`);
+        if (special.modelUrl && fs.existsSync(`${publicPath}/${system.modelUrl}`)) fs.unlinkSync(`${publicPath}/${system.modelUrl}`);
+        const ret = await systemServer.updateSystem(data);
+        ctx.body = {
+          ok: ret,
+          data: '',
+          msg: ret ? '项目更新成功' : '项目更新失败',
+        };
+      } catch (e) {
+        ctx.body = {
+          ok: false,
+          data: '',
+          msg: String(e),
+        };
+      }
     },
     async deleteByRid(ctx) {
       const rid = ctx.query.rid;
@@ -187,7 +204,7 @@ module.exports = {
         const filename = `${account}/${type}_${ctx.req.file.filename}`;
         const systemInfo = await systemServer.getOneSystem({ id });
         const typeUrl = systemInfo[type];
-        if (typeUrl) fs.unlinkSync(`${publicPath}/${typeUrl}`);
+        if (typeUrl && fs.existsSync(`${publicPath}/${typeUrl}`)) fs.unlinkSync(`${publicPath}/${typeUrl}`);
         if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
         const file = fs.readFileSync(filePath);
         fs.writeFileSync(`${publicPath}/${filename}`, file);

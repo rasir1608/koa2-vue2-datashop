@@ -96,7 +96,7 @@ export default {
           if(mySystemList.find(s => s.rid === ret.data.systemRid)){
             next(($vm) => {
               $vm.interface = ret.data;
-              if($vm.requestEditor) $vm.requestEditor.setValue($vm.interface.request); 
+              if($vm.requestEditor) $vm.requestEditor.setValue($vm.interface.request || ''); 
               if($vm.responseEditor) $vm.responseEditor.setValue($vm.interface.response || '');
             });
           } else {
@@ -125,7 +125,7 @@ export default {
         const ret = await this.$axios.get('/interface/findById',{params:{id}})
         if(ret.ok){
             this.interface = ret.data;
-            if(this.requestEditor) this.requestEditor.setValue(this.interface.request); 
+            if(this.requestEditor) this.requestEditor.setValue(this.interface.request || ''); 
             if(this.responseEditor) this.responseEditor.setValue(this.interface.response || '');
         } else {
             this.$Message.error(ret.msg);
@@ -203,7 +203,7 @@ export default {
             foldGutter:true,
             indentUnit:4
         });
-        if(initValue) editor.setValue(initValue);
+        if(initValue) editor.setValue(initValue || '');
         return editor;
     },
   }

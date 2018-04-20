@@ -10,7 +10,7 @@ const secret = 'data-shop-secret';
 const verify = util.promisify(jwt.verify); // 解密
 const salt = bcrypt.genSaltSync(10);
 module.exports = {
-    async getImageUpload(ctx) {
+    async uploadHeaderImg(ctx) {
       const token = ctx.header.authorization;
       if (token) {
         try {
@@ -32,20 +32,20 @@ module.exports = {
           if (ret) {
             ctx.body = {
               ok: true,
-              msg: '文件上传成功',
+              msg: '头像上传成功',
               data: filename,
             };
           } else {
             ctx.body = {
               ok: false,
-              msg: '文件上传成功，文件路径保存失败！',
+              msg: '头像上传成功，头像路径保存失败！',
               data: filename,
             };
           }
         } catch (e) {
           ctx.body = {
             ok: false,
-            msg: '文件上传失败',
+            msg: '头像上传失败',
             data: e.toString(),
           };
         }
@@ -68,14 +68,14 @@ module.exports = {
           };
         }
     },
-    async getUserInfoByName(ctx) {
+    async getUserListByName(ctx) {
       const userName = ctx.query.userName;
-      const result = await userServer.getUserByName(userName);
+      const result = await userServer.getUserListByName(userName);
       if (result) {
         ctx.body = {
           ok: true,
           data: result,
-          msg: '',
+          msg: '获取信息成功',
         };
       } else {
         ctx.body = {
@@ -108,7 +108,7 @@ module.exports = {
         if (isExis) {
             ctx.body = {
                 ok: false,
-                data: 0,
+                data: false,
                 msg: '账号已存在',
             };
         } else {
@@ -130,8 +130,8 @@ module.exports = {
               };
             } else {
               ctx.body = {
-                ok: true,
-                data: '',
+                ok: false,
+                data: upUser,
                 msg: '账号保存失败',
               };
             }
@@ -232,12 +232,11 @@ module.exports = {
     },
     async updateUserName(ctx) {
       const user = ctx.request.body;
-      console.log(234, user);
       const ret = await userServer.getOneUserInfo({ userName: user.userName });
       if (ret) {
         ctx.body = {
           ok: false,
-          msg: '用户昵称以占用',
+          msg: '用户昵称已占用',
           data: '',
         };
       } else {
